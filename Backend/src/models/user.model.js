@@ -3,11 +3,14 @@ import mongoose, { Schema } from "mongoose";
 const userSchema = new Schema(
     {
         username: {
-        type: String
+            type: String,
+            require: true
+
         },
         email: {
             type: String,
-            require: true
+            require: true,
+            unique: true
         },
         password: {
             type: String,
