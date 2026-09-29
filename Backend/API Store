@@ -1,0 +1,11 @@
+User Register api
+POAT = http://localhost:4000/api/register
+
+User Login api
+POST = http://localhost:4000/api/login
+
+Currently logged-in user getProfile api
+GET = http://localhost:4000/api/profile
+
+Get All Users
+GET = http://localhost:4000/api/users
