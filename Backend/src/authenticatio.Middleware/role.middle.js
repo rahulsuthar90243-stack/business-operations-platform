@@ -7,7 +7,7 @@ const roleMiddleware = (...allowedRoles) => {
 
   return (req, res, next) => {
     const userRole = req.user?.role || req.user?.userRole;
-    console.log(userRole);
+    // console.log(userRole);
 
     // check user login
     if (!req.user) {
@@ -23,6 +23,9 @@ const roleMiddleware = (...allowedRoles) => {
         message: "User role not found.",
       });
     }
+
+    console.log(allowedRoles)
+    console.log(userRole)
 
     // User role allowed check
     if (!allowedRoles.includes(userRole)) {
