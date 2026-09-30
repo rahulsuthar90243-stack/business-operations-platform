@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 export const register = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
       return res
@@ -25,9 +25,12 @@ export const register = async (req, res) => {
       username,
       email,
       password: hashPass,
-      role,
+      role: "customer",
     });
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined");
+    }
     const token = jwt.sign(
       {
         id: user._id,
@@ -89,6 +92,9 @@ export const login = async (req, res) => {
 
     // generate jwt
 
+    if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+    }
     const token2 = jwt.sign(
       {
         id: user._id,
