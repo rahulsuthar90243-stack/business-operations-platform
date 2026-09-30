@@ -22,20 +22,20 @@ const getManagerDeashboard = async (req, res) =>{
         })
       }
 
-      const employee = await userModel.findOne({
+      const manager = await userModel.findOne({
         _id: userId,
-        role: "employee"
+        role: "manager"
       }).select("-password");
 
-      if(!employee){
+      if(!manager){
         return res.status(404).json({
           success: false,
-          message: "employee not found"
+          message: "Manager not found"
         })
       }
 
       res.status(200).json({
-        message: "employee deashboard data",
+        message: "manager deashboard data",
         success: true,
         admin
       })
@@ -43,7 +43,7 @@ const getManagerDeashboard = async (req, res) =>{
 
     
    } catch (error) {
-        console.error("Get employee Dashboard Error", error);
+        console.error("Get Manager Dashboard Error", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
