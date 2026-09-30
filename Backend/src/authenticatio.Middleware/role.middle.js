@@ -24,8 +24,8 @@ const roleMiddleware = (...allowedRoles) => {
       });
     }
 
-    console.log(allowedRoles)
-    console.log(userRole)
+    // console.log(allowedRoles)
+    // console.log(userRole)
 
     // User role allowed check
     if (!allowedRoles.includes(userRole)) {
