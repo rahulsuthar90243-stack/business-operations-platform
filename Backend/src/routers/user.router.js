@@ -1,5 +1,5 @@
 import express from "express"
-import {register, login} from "../controllers/user.controller.js";
+import {register, login, logout} from "../controllers/user.controller.js";
 import authMiddleware from "../authenticatio.Middleware/auth.middle.js";
 import getProfile from "../controllers/profile.controller.js";
 import getAllUser from "../controllers/allProfile.controller.js";
@@ -11,6 +11,7 @@ const router = express.Router();
 
 router.post("/register", register)
 router.post("/login", login);
+router.post("/logout", logout);
 
 router.get("/profile",
   authMiddleware,
