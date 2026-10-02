@@ -40,9 +40,9 @@ export const register = async (req, res) => {
     );
 
     res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax"
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
     });
 
     res.status(201).json({
@@ -93,7 +93,7 @@ export const login = async (req, res) => {
     // generate jwt
 
     if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined");
+      throw new Error("JWT_SECRET is not defined");
     }
     const token2 = jwt.sign(
       {
@@ -103,11 +103,11 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
     );
 
-     res.cookie("token", token2, {
-     httpOnly: true,
-     secure: process.env.NODE_ENV === "production",
-     sameSite: "strict"
-});
+    res.cookie("token", token2, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
 
     return res.status(200).json({
       message: "Login Successfully",
@@ -115,9 +115,8 @@ export const login = async (req, res) => {
       username: user.username,
       email: user.email,
       password: "********",
-      role: user.role
-});
-
+      role: user.role,
+    });
   } catch (error) {
     console.log("Error", error);
     return res.status(500).json({
@@ -125,4 +124,14 @@ export const login = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export const logout = (req, res) => {
+  // Clear the authentication token cookie
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  res.status(200).json({ message: "Logout successful" });
 };
