@@ -40,7 +40,7 @@ All API endpoints are prefixed with `/api`.
 
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
-| `POST` | `/api/register` | Public | Create an account. `role` is optional and defaults to `customer`. |
+| `POST` | `/api/register` | Public | Create a customer account. Any supplied `role` is ignored; elevated roles must be assigned through an admin-controlled workflow. |
 | `POST` | `/api/login` | Public | Verify email and password, then set the JWT cookie. |
 | `GET` | `/api/profile` | Authenticated | Get the signed-in user's profile. |
 | `GET` | `/api/users` | Authenticated | Get the user list. |
@@ -49,6 +49,6 @@ All API endpoints are prefixed with `/api`.
 | `GET` | `/api/employee` | `admin`, `manager`, `employee` | Get the employee dashboard. |
 | `GET` | `/api/customer` | Any authenticated role | Get the customer dashboard. |
 
-Supported roles are `admin`, `manager`, `employee`, and `customer`. Registration and login accept JSON request bodies. Registration requires `username`, `email`, and `password`; login requires `email` and `password`.
+Supported roles are `admin`, `manager`, `employee`, and `customer`. Registration and login accept JSON request bodies. Public registration requires `username`, `email`, and `password` and always creates a customer account; login requires `email` and `password`.
 
 Authenticated endpoints accept a JWT from either the `token` cookie or an `Authorization: Bearer <token>` header. The token is set as an HTTP-only cookie during registration and login. In production, the cookie is marked `secure` when `NODE_ENV=production`.
