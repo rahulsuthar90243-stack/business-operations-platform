@@ -5,12 +5,17 @@ import customerRouter from "./routers/deashboard.router/customer.router.js"
 import adminRouter from "./routers/deashboard.router/admin.router.js"
 import employeeRouter from "./routers/deashboard.router/employee.router.js"
 import managerRouter from "./routers/deashboard.router/manager.router.js"
+import cors from "cors"
 
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+}))
 
 app.use("/api", router);
 app.use("/api", customerRouter);

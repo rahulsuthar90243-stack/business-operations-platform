@@ -15,7 +15,7 @@ const getManagerDeashboard = async (req, res) =>{
           role: "manager"
         }).select("-password")
 
-        return res.status(201).json({
+        return res.status(200).json({
           message: "All manager data",
           success: true,
           manager
@@ -37,7 +37,7 @@ const getManagerDeashboard = async (req, res) =>{
       res.status(200).json({
         message: "manager deashboard data",
         success: true,
-        admin
+        manager
       })
 
 
