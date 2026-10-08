@@ -54,16 +54,27 @@ const PATHS = Object.freeze({
   employee: {
     dashboard: '/employee/dashboard',
     tasks: '/employee/tasks',
+    projects: '/employee/projects',
+    tickets: '/employee/tickets',
+    timeTracking: '/employee/time-tracking',
     schedule: '/employee/schedule',
+    calendar: '/employee/calendar',
+    messages: '/employee/messages',
     profile: '/employee/profile',
+    settings: '/employee/settings',
   },
   customer: {
     dashboard: '/customer/dashboard',
+    projects: '/customer/projects',
+    tickets: '/customer/tickets',
+    messages: '/customer/messages',
     orders: '/customer/orders',
     invoices: '/customer/invoices',
     payments: '/customer/payments',
+    documents: '/customer/documents',
     support: '/customer/support',
     profile: '/customer/profile',
+    settings: '/customer/settings',
   },
 });
 
