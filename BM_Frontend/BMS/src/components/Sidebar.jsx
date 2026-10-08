@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate} from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { getNavigationByRole } from "../config/navigationConfig";
 import { useAuth } from "../context/AuthContext";
@@ -7,6 +7,12 @@ function Sidebar({ ticketsCount = 0, className = "" }) {
   // NOTE: if your AuthContext exposes a logout function under a different
   // name (e.g. signOut), change it here.
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", {replace: true});
+  };
 
   const role = user?.role?.toLowerCase();
   const navigationItems = getNavigationByRole(role);
@@ -48,7 +54,7 @@ function Sidebar({ ticketsCount = 0, className = "" }) {
             const showBadge = item.path?.includes("tickets") && ticketsCount > 0;
 
             return (
-              <li key={item.path}>
+              <li key={item.id}>
                 <NavLink
                   to={item.path}
                   title={item.label}
@@ -89,15 +95,17 @@ function Sidebar({ ticketsCount = 0, className = "" }) {
             <p className="truncate text-[12px] font-medium leading-4 text-white">{displayName}</p>
             <p className="truncate text-[10px] leading-4 text-violet-400">{displayRole}</p>
           </div>
+          
           <button
             type="button"
             aria-label={`Log out ${displayName}`}
             title="Log out"
-            onClick={logout}
+            onClick={handleLogout}
             className="ml-auto flex size-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 sm:ml-0"
           >
             <LogOut className="size-3.5" strokeWidth={1.7} aria-hidden="true" />
           </button>
+   
         </div>
       </div>
     </aside>
