@@ -3,10 +3,10 @@ import { Users, Briefcase, Folder, Ticket } from "lucide-react";
 // Adjust these import paths to match your project structure.
 import PageWrapper from "../../components/PageWrapper.jsx";
 import StatCard from "../../components/StatCard.jsx";
-import RevenueExpenseChart from "../../components/RevenueExpenseChart";
-import ProjectStatusChart from "../../components/ProjectStatusChart.jsx";
-import RecentUsers from "../../components/RecenUsers.jsx";
-import ActivityFeed from "../../components/ActivityFeed";
+import RevenueExpenseChart from "../../components/admin/RevenueExpenseChart.jsx";
+import ProjectStatusChart from "../../components/admin/ProjectStatusChart.jsx";
+import RecentUsers from "../../components/admin/RecenUsers.jsx";
+import ActivityFeed from "../../components/admin/ActivityFeed.jsx";
 
 /* -------------------------------------------------------------------------- */
 /* Mock data — lets the full UI render without a backend.                     */
