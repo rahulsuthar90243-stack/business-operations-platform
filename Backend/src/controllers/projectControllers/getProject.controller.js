@@ -36,6 +36,11 @@ export const getProjects = async (req, res) => {
     // 3. Fetch projects from MongoDB
     const projects = await projectModel
       .find(filter)
+      .populate({
+       path: "members",
+       model: "userModel",
+       select: "username email"
+      })
       .sort({ createdAt: -1 });
 
     // 4. Send response
