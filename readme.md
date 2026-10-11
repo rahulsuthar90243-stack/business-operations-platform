@@ -1,126 +1,129 @@
-# Business Operations Platform
+# Business Management System
 
-A simple, secure backend foundation for managing users, access, and business operations in a modern web application.
+A role-based business operations application with a React frontend and an Express/MongoDB API. It includes account registration and login, role-specific dashboards, project management, project membership, and ticket management.
 
-This project is designed to help teams build and extend operational workflows without exposing internal-only logic or private implementation details in the public documentation.
+## Current features
 
-## Overview
+- Register and log in with email and password; public registration creates a `customer` account.
+- Authenticate API requests with a JWT in an HTTP-only cookie or a bearer token.
+- View dashboards for admin, manager, employee, and customer roles.
+- Create projects, view projects according to role, and use the project-membership API (currently affected by the validation issue noted below).
+- Create, view, update, and delete tickets, with role- and project-based access checks.
+- Display role-specific frontend dashboard areas. Several dashboard pages are currently placeholders; the admin dashboard currently uses mock data.
 
-The platform provides a clean starting point for:
+## Project structure
 
-- User account creation and authentication
-- Role-based access control
-- Business dashboards and operational views
-- API-based integration for web and mobile clients
-- Secure configuration using environment variables
-
-## Features
-
-- Secure authentication setup
-- Role-aware access for different user types
-- Easy backend configuration for local development
-- Extensible structure for business modules and workflows
-- Public-facing documentation that avoids private implementation details
+```text
+Backend/                 Express API and MongoDB models
+BM_Frontend/BMS/         React, Vite, and Tailwind CSS frontend
+```
 
 ## Requirements
 
-- Node.js
-- npm
-- A database service such as MongoDB
+- Node.js and npm
+- A MongoDB instance, local or hosted
 
-## Getting Started
+## Setup and run
 
-Clone the repository and install the dependencies:
+### Backend
 
-```bash
-npm install
-```
-
-Create an environment file such as `.env` and add the required settings:
-
-```env
-PORT=3000
-MONGODB_URI=mongodb://127.0.0.1:27017/your_database_name
-JWT_SECRET=replace_with_a_secure_random_value
-NODE_ENV=development
-```
-
-Use secure, unique values for secrets and never commit them to source control.
-
-Start the application:
-
-```bash
-npm run dev
-```
-
-For a production-style start, use:
-
-```bash
-npm start
-```
-
-## Project Notes
-
-- Keep configuration values in environment variables.
-- Do not store passwords, API keys, or private credentials in the repository.
-- Add business-specific features and modules in a documented, maintainable way.
-
-## Security
-
-This project should be used with standard application security practices:
-
-- Use strong secret values and rotate them regularly
-- Restrict access to protected routes
-- Validate user input before processing
-- Keep dependencies updated
-- Avoid exposing internal-only functions or sensitive implementation details in the public README
-
-## License
-
-This project is provided as a template or starting point for business application development. Update the license and project terms to match your own usage requirements before production deployment.
-
-## Setup
-
-From the repository root, install the backend dependencies and create `Backend/.env`:
+In a terminal, install the backend dependencies:
 
 ```bash
 cd Backend
 npm install
 ```
 
+Create `Backend/.env` with values for the backend configuration:
+
 ```env
-PORT=3000
+PORT=4000
 MONGODB_URL=mongodb://127.0.0.1:27017
 DB_NAME=business_management
 JWT_SECRET=replace_with_a_long_random_secret
 NODE_ENV=development
 ```
 
-`PORT`, `MONGODB_URL`, `DB_NAME`, and `JWT_SECRET` must be set. The database connection combines `MONGODB_URL` and `DB_NAME` (for example, `mongodb://127.0.0.1:27017/business_management`).
+`MONGODB_URL`, `DB_NAME`, and `JWT_SECRET` are required. The API builds the MongoDB connection string by joining `MONGODB_URL` and `DB_NAME`. Set `PORT=4000` to match the frontend's current API URL. The backend CORS configuration allows the Vite development origin `http://localhost:5173`.
 
-Start the API from `Backend`:
+Start the API:
 
 ```bash
 npm run dev
 ```
 
-For a regular Node.js start, use `npm start`. The server listens at `http://localhost:<PORT>`; `GET /` returns a backend status message.
+The backend also provides `npm start` for a regular Node.js start. When running, `GET /` returns a basic service message.
+
+### Frontend
+
+In a second terminal, install and run the frontend:
+
+```bash
+cd BM_Frontend/BMS
+npm install
+npm run dev
+```
+
+Vite serves the frontend at `http://localhost:5173` by default. The frontend currently sends API requests to `http://localhost:4000`.
+
+## Frontend routes
+
+- `/register` and `/login` — account registration and login.
+- `/admin/dashboard`, `/manager/dashboard`, `/employee/dashboard`, `/customer/dashboard` — role-specific dashboard routes.
+- Each role also has additional navigation routes. Pages marked “under construction” are UI placeholders and are not complete features.
 
 ## API
 
-All API endpoints are prefixed with `/api`.
+All endpoints are mounted under `/api`. Requests and responses use JSON unless otherwise noted.
+
+### Authentication and users
 
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
-| `POST` | `/api/register` | Public | Create a customer account. Any supplied `role` is ignored; elevated roles must be assigned through an admin-controlled workflow. |
-| `POST` | `/api/login` | Public | Verify email and password, then set the JWT cookie. |
-| `GET` | `/api/profile` | Authenticated | Get the signed-in user's profile. |
-| `GET` | `/api/users` | Authenticated | Get the user list. |
-| `GET` | `/api/admin` | `admin` | Get the admin dashboard. |
-| `GET` | `/api/manager` | `admin`, `manager` | Get the manager dashboard. |
-| `GET` | `/api/employee` | `admin`, `manager`, `employee` | Get the employee dashboard. |
-| `GET` | `/api/customer` | Any authenticated role | Get the customer dashboard. |
+| `POST` | `/api/register` | Public | Register a customer account. Requires `username`, `email`, and `password`; any role supplied by a client is not used. |
+| `POST` | `/api/login` | Public | Authenticate with `email` and `password`; sets the JWT cookie. |
+| `POST` | `/api/logout` | Public | Clear the JWT cookie. |
+| `GET` | `/api/profile` | Authenticated | Return the signed-in user's profile. |
+| `GET` | `/api/users` | Admin | Return the user list without password fields. |
+| `PATCH` | `/api/users/:userId/role` | Admin, manager | Update a user's role. Body: `{"role":"customer|employee|manager|admin"}`. |
 
-Supported roles are `admin`, `manager`, `employee`, and `customer`. Registration and login accept JSON request bodies. Public registration requires `username`, `email`, and `password` and always creates a customer account; login requires `email` and `password`.
+### Dashboards
 
-Authenticated endpoints accept a JWT from either the `token` cookie or an `Authorization: Bearer <token>` header. The token is set as an HTTP-only cookie during registration and login. In production, the cookie is marked `secure` when `NODE_ENV=production`.
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin` | Admin | Return admin dashboard data. |
+| `GET` | `/api/status/card` | Authenticated | Return status-card data. |
+| `GET` | `/api/manager` | Admin, manager | Return manager dashboard data. |
+| `GET` | `/api/employee` | Admin, manager, employee | Return employee dashboard data. |
+| `GET` | `/api/customer` | Any authenticated role | Return customer dashboard data. |
+
+### Projects
+
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/api/project` | Admin, manager | Create a project. Requires `name`, `startDate`, and `dueDate`; accepts `description`, `status`, `manager`, and `members`. |
+| `GET` | `/api/get/project` | Admin, manager, employee | List projects visible to the signed-in user. Admins see all projects, managers see their projects, and employees see projects they belong to. |
+| `POST` | `/api/:projectId/members` | Admin, manager | Intended to add an employee to a project. Body: `{"employeeId":"<user-id>"}`. Current employee-ID validation rejects valid IDs, so this endpoint may return `400` until that backend issue is fixed. |
+
+Project status values are `planned`, `active`, `on-hold`, `completed`, and `cancelled`. A project's due date must be on or after its start date.
+
+### Tickets
+
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/api/ticket/:projectId` | Admin, manager, employee | Create a ticket in a project. Requires `title` and `description`; optionally accepts `assignedTo` with an employee ID. |
+| `GET` | `/api/tickets` | Admin, manager, employee, customer | List tickets visible to the signed-in user. |
+| `POST` | `/api/update/ticket/:ticketId` | Admin, manager, assigned employee | Update ticket fields. Accepted fields: `title`, `description`, `status`, and `priority`. |
+| `POST` | `/api/delete/ticket/:ticketId` | Admin, manager, assigned employee | Delete a ticket. |
+
+Ticket status values are `open`, `in_progress`, `in_review`, `resolved`, and `closed`. Priority values are `low`, `medium`, `high`, and `critical`. Admins can access all tickets; managers are scoped to tickets in their projects; employees can access tickets assigned to them; customers can view tickets they created.
+
+### Authentication details
+
+Protected API routes accept the JWT from the `token` cookie or the authorization request header. Login and registration set an HTTP-only `token` cookie. For production, configure HTTPS and set `NODE_ENV=production` so the cookie is marked secure.
+
+## Development notes
+
+- Keep secrets and local configuration in environment files; do not commit `.env` files or credentials.
+- Public registration creates customer accounts. Assign elevated roles only through a trusted admin-controlled process.
+- The frontend currently has dedicated login and registration flows. Some dashboard destinations are placeholders, and the admin dashboard's displayed sample metrics and activity are mock data.
