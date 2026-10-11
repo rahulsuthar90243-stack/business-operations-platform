@@ -7,6 +7,7 @@ import employeeRouter from "./routers/deashboard.router/employee.router.js"
 import managerRouter from "./routers/deashboard.router/manager.router.js"
 import cors from "cors"
 import projectRouter from "./routers/project.router.js"
+import ticketRouter from "./routers/ticket.router.js"
 
 
 const app = express();
@@ -27,6 +28,10 @@ app.use("/api", managerRouter);
 // project Router
 
 app.use("/api", projectRouter);
+
+//ticket router
+
+app.use("/api", ticketRouter);
 
 
 export default app;
