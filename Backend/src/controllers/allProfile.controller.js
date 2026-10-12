@@ -4,18 +4,15 @@ const getAllUser = async (req, res) => {
 
   try {
 
-    const users = await userModel.find().select("-password");
-
-    if (!users) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
+    const users = await userModel.find().select("-password").lean();
+    const usersWithOnlineStatus = users.map((user) => ({
+      ...user,
+      isOnline: Boolean(user.isOnline),
+    }));
 
     return res.status(200).json({
       success: true,
-      users,
+      users: usersWithOnlineStatus,
     });
   } catch (error) {
     res.status(500).json({

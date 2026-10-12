@@ -39,6 +39,11 @@ export const register = async (req, res) => {
       process.env.JWT_SECRET,
     );
 
+    const active = await userModel.findByIdAndUpdate(user._id, {
+      isOnline: true,
+      lastSeen: null,
+    });
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -103,6 +108,11 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
     );
 
+    await userModel.findByIdAndUpdate(user._id, {
+      isOnline: true,
+      lastSeen: null,
+    });
+
     res.cookie("token", token2, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -126,12 +136,48 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
-  // Clear the authentication token cookie
+export const logout = async (req, res) => {
+  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
   });
-  res.status(200).json({ message: "Logout successful" });
+
+  try {
+    if (token) {
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined");
+      }
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (error) {
+        if (
+          error.name !== "JsonWebTokenError" &&
+          error.name !== "TokenExpiredError" &&
+          error.name !== "NotBeforeError"
+        ) {
+          throw error;
+        }
+      }
+
+      if (decoded && typeof decoded !== "string" && decoded.id) {
+        await userModel.findByIdAndUpdate(decoded.id, {
+          isOnline: false,
+          lastSeen: new Date(),
+        });
+      }
+    }
+
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout failed:", error);
+    return res.status(500).json({
+      message: "Logout failed",
+      error: error.message,
+    });
+  }
 };
