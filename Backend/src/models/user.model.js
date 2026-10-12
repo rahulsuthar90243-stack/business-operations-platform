@@ -20,7 +20,15 @@ const userSchema = new Schema(
             type: String,
             enum: ["admin", "manager", "employee", "customer"],
             default: "customer"
-        }
+        },
+        isOnline: {
+           type: Boolean,
+           default: false,
+        },
+        lastSeen: {
+           type: Date,
+           default: null,
+        },
     },{timestamps: true}
 )
 
