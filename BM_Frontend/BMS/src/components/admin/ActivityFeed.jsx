@@ -1,14 +1,7 @@
+import { useEffect, useState } from "react";
 import { Inbox } from "lucide-react";
-
-// Mock data for initial UI development only — pass your own via the `activities` prop.
-const MOCK_ACTIVITIES = [
-  { id: 1, user: "Sarah Chen", action: "completed task", target: "API Integration Review", time: "5 min ago" },
-  { id: 2, user: "Marcus Webb", action: "commented on", target: "TKT-1021", time: "22 min ago" },
-  { id: 3, user: "Priya Nair", action: "uploaded file to", target: "Q3 Report", time: "1h ago" },
-  { id: 4, user: "Acme Corp", action: "created ticket", target: "TKT-1022", time: "2h ago" },
-  { id: 5, user: "James Holloway", action: "updated status of", target: "Platform v3 Launch", time: "3h ago" },
-  { id: 6, user: "Aisha Okonkwo", action: "assigned", target: "TKT-1018", time: "5h ago" },
-];
+import { getActivityLogs } from "../../services/adminService.js";
+import getActiveUsers from "../../services/activeFild.js";
 
 const AVATAR_COLORS = [
   "bg-violet-100 text-violet-700",
@@ -31,10 +24,11 @@ const getAvatarColor = (name = "") => {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 };
 
-// Strings are shown as-is ("5 min ago"); Date objects become relative text.
 const formatTime = (value) => {
-  if (!(value instanceof Date)) return value;
-  const minutes = Math.max(0, Math.round((Date.now() - value.getTime()) / 60000));
+  const timestamp = value instanceof Date ? value.getTime() : Date.parse(value);
+  if (!Number.isFinite(timestamp)) return "Unknown time";
+
+  const minutes = Math.max(0, Math.round((Date.now() - timestamp) / 60000));
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.floor(minutes / 60);
@@ -42,30 +36,47 @@ const formatTime = (value) => {
   return `${Math.floor(hours / 24)}d ago`;
 };
 
-/**
- * ActivityFeed
- *
- * Props:
- *  - activities:      [{ id?, user, action, target?, targetHref?, time }, ...]
- *                     `target` is the highlighted entity (ticket ID, task name…).
- *                     `time` is a string ("5 min ago") or a Date.
- *  - title:           card heading
- *  - live:            show the green "live" dot in the header (default true)
- *  - scrollClassName: classes for the scroll area (default "max-h-80").
- *                     Use e.g. "h-full" with a tall parent to fill the card.
- *  - className:       extra classes for the outer card
- *
- * Usage:
- *   <ActivityFeed />
- *   <ActivityFeed activities={items} scrollClassName="max-h-96" />
- */
 export default function ActivityFeed({
-  activities = MOCK_ACTIVITIES,
   title = "Activity Feed",
   live = true,
   scrollClassName = "max-h-80",
   className = "",
 }) {
+  const [fetchedActivities, setFetchedActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchActivities = async () => {
+      try {
+        const activityData = await getActivityLogs();
+        const formattedActivities = getActiveUsers(activityData);
+
+        if (isMounted) {
+          setFetchedActivities(
+            Array.isArray(formattedActivities) ? formattedActivities : [],
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching activity logs:", error);
+        if (isMounted) {
+          setFetchedActivities([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchActivities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section
       className={`flex min-w-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm ${className}`}
@@ -86,46 +97,53 @@ export default function ActivityFeed({
         tabIndex={0}
         className={`min-h-0 flex-1 overflow-y-auto border-t border-gray-100 px-4 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-300 sm:px-5 ${scrollClassName}`}
       >
-        {activities.length === 0 ? (
+        {loading ? (
+          <p className="py-8 text-center text-sm text-gray-400" role="status">
+            Loading activity...
+          </p>
+        ) : fetchedActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8 text-sm text-gray-400">
             <Inbox className="h-6 w-6" aria-hidden="true" />
             No recent activity
           </div>
         ) : (
           <ul className="space-y-4">
-            {activities.map((item) => (
-              <li key={item.id ?? `${item.user}-${item.action}-${item.target}-${item.time}`} className="flex items-start gap-3">
-                <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-medium ${getAvatarColor(item.user)}`}
-                  aria-hidden="true"
-                >
-                  {getInitials(item.user)}
-                </span>
+            {fetchedActivities.map((item, index) => {
+              const user =
+                typeof item.user === "string" && item.user.trim()
+                  ? item.user
+                  : "User";
+              const activityText =
+                item.description ||
+                `${item.action || "updated"} ${item.entityType || "record"}`;
 
-                <div className="min-w-0">
-                  <p className="text-sm leading-snug text-gray-600">
-                    <span className="font-medium text-gray-900">{item.user}</span>{" "}
-                    {item.action}
-                    {item.target && (
-                      <>
-                        {" "}
-                        {item.targetHref ? (
-                          <a
-                            href={item.targetHref}
-                            className="font-medium text-violet-600 hover:text-violet-700"
-                          >
-                            {item.target}
-                          </a>
-                        ) : (
-                          <span className="font-medium text-violet-600">{item.target}</span>
-                        )}
-                      </>
-                    )}
-                  </p>
-                  <p className="mt-1 font-mono text-xs text-gray-400">{formatTime(item.time)}</p>
-                </div>
-              </li>
-            ))}
+              return (
+                <li
+                  key={
+                    item.id ??
+                    `${user}-${item.action}-${item.createdAt}-${index}`
+                  }
+                  className="flex items-start gap-3"
+                >
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-medium ${getAvatarColor(user)}`}
+                    aria-hidden="true"
+                  >
+                    {getInitials(user)}
+                  </span>
+
+                  <div className="min-w-0">
+                    <p className="text-sm leading-snug text-gray-600">
+                      <span className="font-medium text-gray-900">{user}</span>{" "}
+                      {activityText}
+                    </p>
+                    <p className="mt-1 font-mono text-xs text-gray-400">
+                      {formatTime(item.createdAt)}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
