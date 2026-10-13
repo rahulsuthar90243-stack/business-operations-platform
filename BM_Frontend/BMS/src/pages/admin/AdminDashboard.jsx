@@ -1,26 +1,18 @@
 import { Users, Briefcase, Folder, Ticket } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  getAdminCardStats,
+  getAllUser,
+  getProjectStatus,
+} from "../../services/adminService.js";
+import { mapRecentUsers } from "../../services/recentUser.js";
 
-// Adjust these import paths to match your project structure.
 import PageWrapper from "../../components/PageWrapper.jsx";
 import StatCard from "../../components/StatCard.jsx";
 import RevenueExpenseChart from "../../components/admin/RevenueExpenseChart.jsx";
 import ProjectStatusChart from "../../components/admin/ProjectStatusChart.jsx";
 import RecentUsers from "../../components/admin/RecenUsers.jsx";
 import ActivityFeed from "../../components/admin/ActivityFeed.jsx";
-
-/* -------------------------------------------------------------------------- */
-/* Mock data — lets the full UI render without a backend.                     */
-/* Later, replace these constants with data from a hook/service in this page  */
-/* (the UI components below only receive data through props).                 */
-/* -------------------------------------------------------------------------- */
-
-const MOCK_STATS = [
-  { id: "employees", label: "Total Employees", value: "247", change: 12, icon: Users },
-  { id: "customers", label: "Total Customers", value: "1,842", change: 89, icon: Briefcase },
-  { id: "projects", label: "Active Projects", value: "38", change: 3, icon: Folder },
-  // Fewer open tickets is good: down arrow, green pill.
-  { id: "tickets", label: "Open Tickets", value: "124", change: -8, changeType: "positive", icon: Ticket },
-];
 
 const MOCK_REVENUE_DATA = [
   { month: "Jan", revenue: 140000, expenses: 90000 },
@@ -34,38 +26,87 @@ const MOCK_REVENUE_DATA = [
   { month: "Sep", revenue: 265000, expenses: 127000 },
 ];
 
-const MOCK_PROJECT_STATUS = [
-  { name: "On Track", value: 18, color: "#059669" },
-  { name: "At Risk", value: 9, color: "#d97706" },
-  { name: "Delayed", value: 6, color: "#dc2626" },
-  { name: "Completed", value: 5, color: "#4f46e5" },
-];
-
-const MOCK_USERS = [
-  { id: 1, name: "Sarah Chen", email: "sarah.chen@acme.com", role: "Manager", status: "active", joined: "Sep 22, 2026" },
-  { id: 2, name: "Marcus Webb", email: "m.webb@acme.com", role: "Employee", status: "active", joined: "Sep 20, 2026" },
-  { id: 3, name: "Priya Nair", email: "p.nair@acme.com", role: "Employee", status: "pending", joined: "Sep 19, 2026" },
-  { id: 4, name: "James Holloway", email: "j.holloway@acme.com", role: "Manager", status: "active", joined: "Sep 17, 2026" },
-  { id: 5, name: "Aisha Okonkwo", email: "a.okonkwo@acme.com", role: "Employee", status: "inactive", joined: "Sep 15, 2026" },
-];
-
-const MOCK_ACTIVITIES = [
-  { id: 1, user: "Sarah Chen", action: "completed task", target: "API Integration Review", time: "5 min ago" },
-  { id: 2, user: "Marcus Webb", action: "commented on", target: "TKT-1021", time: "22 min ago" },
-  { id: 3, user: "Priya Nair", action: "uploaded file to", target: "Q3 Report", time: "1h ago" },
-  { id: 4, user: "Acme Corp", action: "created ticket", target: "TKT-1022", time: "2h ago" },
-  { id: 5, user: "James Holloway", action: "updated status of", target: "Platform v3 Launch", time: "3h ago" },
-  { id: 6, user: "Aisha Okonkwo", action: "assigned", target: "TKT-1018", time: "5h ago" },
-];
-
-/* -------------------------------------------------------------------------- */
-
 export default function AdminDashboard() {
+  const [users, setUsers] = useState([]);
+  const [projectStatus, setProjectStatus] = useState([]);
+  const [adminStats, setAdminStats] = useState({
+    totalEmployee: 0,
+    totalCustomer: 0,
+    activeProject: 0,
+    openTicket: 0,
+  });
+
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        const stats = await getAdminCardStats();
+        setAdminStats(stats);
+      } catch (error) {
+        console.error("Error fetching admin stats:", error);
+      }
+    };
+
+    fetchAdminStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchProjectStatus = async () => {
+      try {
+        const statusData = await getProjectStatus();
+        setProjectStatus(statusData);
+      } catch (error) {
+        console.error("Error fetching project status:", error);
+      }
+    };
+
+    fetchProjectStatus();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const allUsers = await getAllUser();
+        setUsers(mapRecentUsers(allUsers));
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const statCards = [
+    {
+      id: "employees",
+      label: "Total Employees",
+      value: adminStats.totalEmployee ?? 0,
+      icon: Users,
+    },
+    {
+      id: "customers",
+      label: "Total Customers",
+      value: adminStats.totalCustomer ?? 0,
+      icon: Briefcase,
+    },
+    {
+      id: "projects",
+      label: "Active Projects",
+      value: adminStats.activeProject ?? 0,
+      icon: Folder,
+    },
+    {
+      id: "tickets",
+      label: "Open Tickets",
+      value: adminStats.openTicket ?? 0,
+      icon: Ticket,
+    },
+  ];
+
   return (
     <PageWrapper>
       {/* Top: stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
-        {MOCK_STATS.map(({ id, ...stat }) => (
+        {statCards.map(({ id, ...stat }) => (
           <StatCard key={id} {...stat} />
         ))}
       </div>
@@ -76,12 +117,12 @@ export default function AdminDashboard() {
           data={MOCK_REVENUE_DATA}
           className="h-full lg:col-span-2"
         />
-        <ProjectStatusChart data={MOCK_PROJECT_STATUS} className="h-full" />
+        <ProjectStatusChart data={projectStatus} className="h-full" />
       </div>
 
       {/* Bottom: recent users (2/3) + activity feed (1/3) */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
-        <RecentUsers users={MOCK_USERS} className="lg:col-span-2" />
+        <RecentUsers users={users} className="lg:col-span-2" />
 
         {/*
           On large screens the feed is absolutely positioned inside this wrapper,
@@ -90,7 +131,6 @@ export default function AdminDashboard() {
         */}
         <div className="relative">
           <ActivityFeed
-            activities={MOCK_ACTIVITIES}
             className="h-full lg:absolute lg:inset-0"
             scrollClassName="max-h-80 lg:max-h-none"
           />
