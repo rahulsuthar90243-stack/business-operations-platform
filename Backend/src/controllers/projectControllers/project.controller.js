@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { projectModel } from "../../models/project.model.js";
 import { userModel } from "../../models/user.model.js";
+import logActivity from "../../Utils/logActivity.js";
 
 /**
  * Controller to create a new project
@@ -134,6 +135,15 @@ export const createProject = async (req, res) => {
       members: formattedMembers,
       startDate: parsedStartDate,
       dueDate: parsedDueDate,
+    });
+
+    await logActivity({
+      userId: req.user.id,
+      action: "created",
+      entityType: "project",
+      entityId: newProject._id,
+      description: `Created project: ${newProject.name}`,
+      createdAt: new Date(),
     });
 
     return res.status(201).json({

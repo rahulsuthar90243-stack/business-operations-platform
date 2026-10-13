@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { projectModel } from "../../models/project.model.js";
 import { userModel } from "../../models/user.model.js";
 import { ticketModel } from "../../models/ticket.model.js";
+import logActivity from "../../Utils/logActivity.js";
 
 export const createTicket = async (req, res) => {
   try {
@@ -128,6 +129,15 @@ export const createTicket = async (req, res) => {
       assignedTo: assignedEmployeeId,
       status: "open",
       priority: "medium",
+    });
+
+    await logActivity({
+      userId: req.user.id,
+      action: "created",
+      entityType: "ticket",
+      entityId: ticket._id,
+      description: `Created ticket: ${ticket.title}`,
+      createdAt: new Date(),
     });
 
     return res.status(201).json({
