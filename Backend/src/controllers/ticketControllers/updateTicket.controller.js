@@ -1,6 +1,6 @@
-
 import { ticketModel } from "../../models/ticket.model.js";
 import { projectModel } from "../../models/project.model.js";
+import logActivity from "../../Utils/logActivity.js";
 
  const updateTicket = async (req, res) => {
   try {
@@ -96,6 +96,15 @@ import { projectModel } from "../../models/project.model.js";
         model: "userModel",
         select: "username email",
       })
+
+      await logActivity({
+        userId: req.user.id,
+        action: "updated",
+        entityType: "ticket",
+        entityId: updatedTicket._id,
+        description: `Updated ticket: ${updatedTicket.title}`,
+        createdAt: new Date(),
+      });
 
     return res.status(200).json({
       success: true,

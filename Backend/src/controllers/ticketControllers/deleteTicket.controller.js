@@ -1,6 +1,8 @@
 
 import { ticketModel } from "../../models/ticket.model.js";
 import { projectModel } from "../../models/project.model.js";
+import { userModel } from "../../models/user.model.js";
+import logActivity from "../../Utils/logActivity.js";
 
 export const deleteTicket = async (req, res) => {
   try {
@@ -57,6 +59,15 @@ export const deleteTicket = async (req, res) => {
 
     // 6. Delete ticket
     await ticket.deleteOne();
+
+    await logActivity({
+      userId: req.user.id,
+      action: "deleted",
+      entityType: "ticket",
+      entityId: ticket._id,
+      description: `Deleted ticket: ${ticket.title}`,
+      createdAt: new Date(),
+    });
 
     return res.status(200).json({
       success: true,

@@ -12,14 +12,24 @@ GET = http://localhost:4000/api/users
 
 
 Get Admin api
-get http://localhost:4000/api/admin
+GET = http://localhost:4000/api/admin
 
 Get Manager api
-get http://localhost:4000/api/manager
+GET = http://localhost:4000/api/manager
 
 Get Employee api
-get http://localhost:4000/api/employee
+GET = http://localhost:4000/api/employee
 
 Get Customer api
-get http://localhost:4000/api/customer
+GET = http://localhost:4000/api/customer
 
+<!-- Project -->
+
+create Project api
+POST = http://localhost:4000/api/project
+
+get Project api
+GET = http://localhost:4000/api/get/project
+
+add Project Member api
+POST = http://localhost:4000/api/project/:projectId/member

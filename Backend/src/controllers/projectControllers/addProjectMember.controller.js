@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import { projectModel } from "../../models/project.model.js";
 import { userModel } from "../../models/user.model.js";
+import logActivity from "../../Utils/logActivity.js";
 
 export const addProjectMember = async (req, res) => {
   try {
@@ -92,6 +93,15 @@ export const addProjectMember = async (req, res) => {
     project.members.push(employee._id);
 
     await project.save();
+
+    await logActivity({
+      userId: req.user.id,
+      action: "added_member",
+      entityType: "project",
+      entityId: project._id,
+      description: `Added member to project: ${project.name}`,
+      createdAt: new Date(),
+    });
 
     // 11. Send success response
     return res.status(200).json({
