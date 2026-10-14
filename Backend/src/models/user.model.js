@@ -12,10 +12,10 @@ const userSchema = new Schema(
             required: true,
             unique: true
         },
-        password: {
-            type: String,
-            required: true
-        },
+        // password: {
+        //     type: String,
+        //     required: true
+        // },
         role: {
             type: String,
             enum: ["admin", "manager", "employee", "customer"],
@@ -29,6 +29,11 @@ const userSchema = new Schema(
            type: Date,
            default: null,
         },
+        companyId: {
+           type: mongoose.Schema.Types.ObjectId,
+           ref: "Company",
+           required: true,
+        }
     },{timestamps: true}
 )
 
