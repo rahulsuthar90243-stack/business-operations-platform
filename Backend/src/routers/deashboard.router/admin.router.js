@@ -5,7 +5,10 @@ import getAdminDashboard from "../../controllers/deashboard.controllers/admin.co
 import statusCard from "../../controllers/getAdminCard.controller.js";
 import getProjectStatusSummary from "../../controllers/deashboard.controllers/projectStatus.controller.js"
 import getActiveFild from "../../controllers/deashboard.controllers/activeFild.controller.js"
+import createCompany from "../../controllers/companyControllers/company.controller.js";
 const router = express.Router();
+
+router.post("/company", createCompany);
 
 router.get("/admin", 
     authMiddleware,
