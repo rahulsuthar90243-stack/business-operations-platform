@@ -1,183 +1,222 @@
 import { userModel } from "../models/user.model.js";
+import company from "../models/company.model.js";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 
-export const register = async (req, res) => {
+// 1. REQUEST ACCESS
+export const requestAccess = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, workspaceCode } = req.body;
 
-    if (!username || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username, email, and password are required." });
+    if (!username?.trim() || !email?.trim() || !workspaceCode?.trim()) {
+      return res.status(400).json({
+        message: "Username, email and workspace code are required.",
+      });
     }
 
-    const existingUser = await userModel.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Find company
+    const existingCompany = await company.findOne({
+      workspaceCode: workspaceCode.trim(),
+    });
+
+    if (!existingCompany) {
+      return res.status(404).json({
+        message: "Invalid workspace code.",
+      });
+    }
+
+    // Check existing user in this company
+    const existingUser = await userModel.findOne({
+      email: normalizedEmail,
+      companyId: existingCompany._id,
+    });
 
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({
+        message: "An access request or account already exists.",
+        status: existingUser.status,
+      });
     }
 
-    const hashPass = await bcrypt.hash(password, 10);
+    // Generate an unknown random password until user sets their own
+    const randomPassword = crypto.randomBytes(32).toString("hex");
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
+    // Save directly in User collection
     const user = await userModel.create({
-      username,
-      email,
-      password: hashPass,
+      username: username.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      companyId: existingCompany._id,
       role: "customer",
+      status: "pending",
+      isOnline: false,
+      lastSeen: new Date(),
     });
 
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined");
-    }
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-    );
-
-    const active = await userModel.findByIdAndUpdate(user._id, {
-      isOnline: true,
-      lastSeen: null,
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
-
-    res.status(201).json({
-      message: "User Register Successfully",
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      password: "********",
-      role: user.role,
+    return res.status(201).json({
+      message: "Access request submitted successfully.",
+      userId: user._id,
+      status: user.status,
     });
   } catch (error) {
-    console.log("Error: ", error);
-    res.status(500).json({
-      message: "Registration failed",
-      error: error.message,
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "An account with this unique field already exists.",
+      });
+    }
+
+    console.error("Request access error:", error);
+
+    return res.status(500).json({
+      message: "Failed to submit access request.",
     });
   }
 };
 
+// 4. LOGIN
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email?.trim() || !password) {
       return res.status(400).json({
         message: "Email and password are required.",
       });
     }
 
-    // user find
-    const user = await userModel.findOne({ email });
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined.");
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await userModel.findOne({
+      email: normalizedEmail,
+    });
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found",
+      return res.status(401).json({
+        message: "Invalid email or password.",
       });
     }
 
-    // password compare
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    // Only approved users can log in
+    if (user.status !== "approved") {
+      return res.status(403).json({
+        message:
+          user.status === "rejected"
+            ? "Your access request was rejected."
+            : "Your account is pending admin approval.",
+        status: user.status,
+      });
+    }
+
+    // Verify password
+    const isPasswordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
 
     if (!isPasswordMatch) {
       return res.status(401).json({
-        message: "Invalid password",
+        message: "Invalid email or password.",
       });
     }
 
-    // generate jwt
-
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined");
-    }
-    const token2 = jwt.sign(
+    // Generate JWT
+    const token = jwt.sign(
       {
         id: user._id,
         role: user.role,
+        companyId: user.companyId,
       },
       process.env.JWT_SECRET,
+      { expiresIn: "1d" }
     );
 
-    await userModel.findByIdAndUpdate(user._id, {
-      isOnline: true,
-      lastSeen: null,
+    user.isOnline = true;
+    user.lastSeen = null;
+    await user.save();
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.cookie("token", token2, {
+    return res.status(200).json({
+      message: "Login successful.",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId,
+        status: user.status,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+
+    return res.status(500).json({
+      message: "Login failed.",
+    });
+  }
+};
+
+// 5. LOGOUT
+export const logout = async (req, res) => {
+  try {
+    const token =
+      req.cookies?.token ||
+      req.headers.authorization?.split(" ")[1];
+
+    if (token && process.env.JWT_SECRET) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (typeof decoded !== "string" && decoded.id) {
+          await userModel.findByIdAndUpdate(decoded.id, {
+            isOnline: false,
+            lastSeen: new Date(),
+          });
+        }
+      } catch (error) {
+        // Expired or invalid token: still clear the cookie
+        if (
+          ![
+            "JsonWebTokenError",
+            "TokenExpiredError",
+            "NotBeforeError",
+          ].includes(error.name)
+        ) {
+          throw error;
+        }
+      }
+    }
+
+    res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
 
     return res.status(200).json({
-      message: "Login Successfully",
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      password: "********",
-      role: user.role,
+      message: "Logout successful.",
     });
   } catch (error) {
-    console.log("Error", error);
+    console.error("Logout error:", error);
+
     return res.status(500).json({
-      message: "Login failed",
-      error: error.message,
+      message: "Logout failed.",
     });
   }
 };
 
-export const logout = async (req, res) => {
-  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
-
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
-
-  try {
-    if (token) {
-      if (!process.env.JWT_SECRET) {
-        throw new Error("JWT_SECRET is not defined");
-      }
-
-      let decoded;
-      try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
-      } catch (error) {
-        if (
-          error.name !== "JsonWebTokenError" &&
-          error.name !== "TokenExpiredError" &&
-          error.name !== "NotBeforeError"
-        ) {
-          throw error;
-        }
-      }
-
-      if (decoded && typeof decoded !== "string" && decoded.id) {
-        await userModel.findByIdAndUpdate(decoded.id, {
-          isOnline: false,
-          lastSeen: new Date(),
-        });
-      }
-    }
-
-    return res.status(200).json({ message: "Logout successful" });
-  } catch (error) {
-    console.error("Logout failed:", error);
-    return res.status(500).json({
-      message: "Logout failed",
-      error: error.message,
-    });
-  }
-};
+export default {requestAccess, login, logout};
