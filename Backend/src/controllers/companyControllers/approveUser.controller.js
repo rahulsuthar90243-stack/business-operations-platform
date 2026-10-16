@@ -13,13 +13,13 @@ export const approveUser = async (req, res) => {
       });
     }
 
-    if (user.status !== "pending") {
+    if (user.accessStatus !== "pending") {
       return res.status(400).json({
-        message: `User status is already ${user.status}.`,
+        message: `User status is already ${user.accessStatus}.`,
       });
     }
 
-    user.status = "approved";
+    user.accessStatus = "approved";
     await user.save();
 
     return res.status(200).json({
@@ -29,7 +29,7 @@ export const approveUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        status: user.status,
+        accessStatus: user.status,
       },
     });
   } catch (error) {
