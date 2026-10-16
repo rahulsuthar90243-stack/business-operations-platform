@@ -1,5 +1,6 @@
 import { userModel } from "../../models/user.model.js";
 import company from "../../models/company.model.js";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
@@ -21,6 +22,7 @@ const createCompany = async (req, res) => {
       !contactDetails ||
       !contactDetails.username ||
       !contactDetails.email ||
+      !contactDetails.password ||
       !contactDetails.phone ||
       !contactDetails.address ||
       !contactDetails.city ||
@@ -46,19 +48,27 @@ const createCompany = async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(contactDetails.password, 10);
+
     const companyData = await company.create({
       companyName,
       companyEmail,
-      contactDetails,
+      contactDetails: { ...contactDetails, password: hashedPassword },
       workspaceCode,
     });
 
     const user = await userModel.create({
       username: contactDetails.username,
       email: contactDetails.email,
+      password: hashedPassword,
       role: "admin",
+      accessStatus: "approved",
       companyId: companyData._id,
     });
+
+    user.isOnline = true;
+    user.lastSeen = null;
+    await user.save();
 
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not defined");

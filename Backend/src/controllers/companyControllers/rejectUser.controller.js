@@ -1,4 +1,4 @@
-import { userModel } from "../../models/user.model";
+import {userModel} from "../../models/user.model.js";
 
 // 3. ADMIN REJECTS USER
 export const rejectUser = async (req, res) => {
@@ -6,22 +6,23 @@ export const rejectUser = async (req, res) => {
     const { userId } = req.params;
 
     const user = await userModel.findOne({
-      _id: userId,
-      status: "pending",
+    _id: userId,
+    accessStatus: { $in: ["pending", "approved"] },
     });
 
     if (!user) {
       return res.status(404).json({
-        message: "Pending user not found.",
+        message: "User not found.",
       });
     }
 
-    user.status = "rejected";
+    user.accessStatus = "rejected";
+    user.isOnline = false;
     await user.save();
 
     return res.status(200).json({
       message: "User rejected successfully.",
-      status: user.status,
+      accessStatus: user.accessStatus,
     });
   } catch (error) {
     console.error("Reject user error:", error);

@@ -8,11 +8,11 @@ import crypto from "crypto";
 // 1. REQUEST ACCESS
 export const requestAccess = async (req, res) => {
   try {
-    const { username, email, workspaceCode } = req.body;
+    const { username, email, workspaceCode, password } = req.body;
 
-    if (!username?.trim() || !email?.trim() || !workspaceCode?.trim()) {
+    if (!username?.trim() || !email?.trim() || !workspaceCode?.trim() || !password) {
       return res.status(400).json({
-        message: "Username, email and workspace code are required.",
+        message: "Username, email, workspace code and password are required.",
       });
     }
 
@@ -43,8 +43,7 @@ export const requestAccess = async (req, res) => {
     }
 
     // Generate an unknown random password until user sets their own
-    const randomPassword = crypto.randomBytes(32).toString("hex");
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Save directly in User collection
     const user = await userModel.create({
@@ -53,7 +52,7 @@ export const requestAccess = async (req, res) => {
       password: hashedPassword,
       companyId: existingCompany._id,
       role: "customer",
-      status: "pending",
+      accessStatus: "pending",
       isOnline: false,
       lastSeen: new Date(),
     });
@@ -61,7 +60,7 @@ export const requestAccess = async (req, res) => {
     return res.status(201).json({
       message: "Access request submitted successfully.",
       userId: user._id,
-      status: user.status,
+      status: user.accessStatus,
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -106,7 +105,7 @@ export const login = async (req, res) => {
     }
 
     // Only approved users can log in
-    if (user.status !== "approved") {
+    if (user.accessStatus !== "approved") {
       return res.status(403).json({
         message:
           user.status === "rejected"
@@ -158,7 +157,7 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
         companyId: user.companyId,
-        status: user.status,
+        accessStatus: user.accessStatus,
       },
     });
   } catch (error) {

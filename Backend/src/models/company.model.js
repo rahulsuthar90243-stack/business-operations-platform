@@ -19,6 +19,7 @@ const companySchema = new mongoose.Schema(
 
     contactDetails: {
       username: { type: String, trim: true },
+      password: { type: String, trim: true },
       email: { type: String, trim: true },
       phone: { type: String, trim: true },
       address: { type: String, trim: true },
