@@ -5,6 +5,9 @@ import "dotenv/config";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
+
+
+
 // 1. REQUEST ACCESS
 export const requestAccess = async (req, res) => {
   try {
@@ -38,7 +41,7 @@ export const requestAccess = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         message: "An access request or account already exists.",
-        status: existingUser.status,
+        status: existingUser.accessStatus,
       });
     }
 
@@ -108,10 +111,10 @@ export const login = async (req, res) => {
     if (user.accessStatus !== "approved") {
       return res.status(403).json({
         message:
-          user.status === "rejected"
+          user.accessStatus === "rejected"
             ? "Your access request was rejected."
             : "Your account is pending admin approval.",
-        status: user.status,
+        status: user.accessStatus,
       });
     }
 

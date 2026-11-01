@@ -12,6 +12,7 @@ export const getCompany = async (req, res) => {
       });
     }
 
+    // Check if the user is an admin of the company
     if (req.params.adminId !== String(user.id)) {
       return res.status(403).json({
         success: false,

@@ -13,7 +13,7 @@ export const approveUser = async (req, res) => {
       });
     }
 
-    if (user.accessStatus !== "pending") {
+    if (user.accessStatus !== "pending" && user.accessStatus !== "rejected") {
       return res.status(400).json({
         message: `User status is already ${user.accessStatus}.`,
       });
