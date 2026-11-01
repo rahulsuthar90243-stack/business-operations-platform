@@ -31,7 +31,10 @@ export const addProjectMember = async (req, res) => {
     const { projectId } = req.params;
     const { employeeId } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(projectId) || mongoose.Types.ObjectId.isValid(employeeId)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(projectId) ||
+      !mongoose.Types.ObjectId.isValid(employeeId)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Invalid project ID or employee ID",
