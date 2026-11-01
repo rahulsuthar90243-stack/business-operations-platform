@@ -10,14 +10,38 @@ import projectRouter from "./routers/project.router.js"
 import ticketRouter from "./routers/ticket.router.js"
 
 
+// import fs from "fs"
+// import path from "path"
+// import { fileURLToPath } from "url"
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-}))
+// app.use(cors({
+//     origin: (origin, callback) => {
+//         // Allow requests with no origin (e.g. mobile apps, curl, Postman) or any localhost port
+//         if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error("Not allowed by CORS"));
+//         }
+//     },
+//     credentials: true,
+// }))
+
+// Serve OpenAPI Specification
+// app.get("/api/docs/openapi.json", (req, res) => {
+//     const specPath = path.join(__dirname, "docs", "openapi.json");
+//     if (fs.existsSync(specPath)) {
+//         res.setHeader("Content-Type", "application/json");
+//         return res.sendFile(specPath);
+//     }
+//     return res.status(404).json({ message: "OpenAPI specification not found" });
+// });
 
 app.use("/api", router);
 app.use("/api", customerRouter);
