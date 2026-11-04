@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const API_URL = "http://localhost:4000";
 
@@ -46,23 +54,31 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState("");
+  const authVersion = useRef(0);
 
   useEffect(() => {
     const controller = new AbortController();
+    const requestVersion = authVersion.current;
 
     async function loadProfile() {
       try {
         const data = await request("/api/profile", { signal: controller.signal });
+        if (authVersion.current !== requestVersion) return;
         setUser(normalizeUser(data));
-        
       } catch (error) {
         if (error.name === "AbortError") return;
+        if (authVersion.current !== requestVersion) return;
         if (error.status !== 401) {
           setAuthError(error.message || "Unable to load your account.");
         }
         setUser(null);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (
+          !controller.signal.aborted &&
+          authVersion.current === requestVersion
+        ) {
+          setLoading(false);
+        }
       }
     }
 
@@ -77,9 +93,24 @@ export function AuthProvider({ children }) {
       signal: options.signal,
     });
     const authenticatedUser = normalizeUser(data);
+    authVersion.current += 1;
     setUser(authenticatedUser);
     setAuthError("");
+    setLoading(false);
     return authenticatedUser;
+  }, []);
+
+  const registerCompany = useCallback(async (companyDetails) => {
+    const data = await request("/api/company", {
+      method: "POST",
+      body: JSON.stringify(companyDetails),
+    });
+    const authenticatedUser = normalizeUser(data);
+    authVersion.current += 1;
+    setUser(authenticatedUser);
+    setAuthError("");
+    setLoading(false);
+    return data;
   }, []);
 
   const register = useCallback(async ({ username, email, password }) => {
@@ -91,7 +122,9 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     await request("/api/logout", { method: "POST" });
+    authVersion.current += 1;
     setUser(null);
+    setLoading(false);
   }, []);
 
   const value = useMemo(
@@ -102,10 +135,11 @@ export function AuthProvider({ children }) {
       loading,
       authError,
       login,
+      registerCompany,
       register,
       logout,
     }),
-    [user, loading, authError, login, register, logout]
+    [user, loading, authError, login, registerCompany, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
