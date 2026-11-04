@@ -21,18 +21,16 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// app.use(cors({
-//     origin: (origin, callback) => {
-//         // Allow requests with no origin (e.g. mobile apps, curl, Postman) or any localhost port
-//         if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
-//             callback(null, true);
-//         } else {
-//             callback(new Error("Not allowed by CORS"));
-//         }
-//     },
-//     credentials: true,
-// }))
-
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
+}))
 // Serve OpenAPI Specification
 // app.get("/api/docs/openapi.json", (req, res) => {
 //     const specPath = path.join(__dirname, "docs", "openapi.json");

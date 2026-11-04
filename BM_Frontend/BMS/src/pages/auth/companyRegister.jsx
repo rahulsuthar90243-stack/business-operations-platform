@@ -1,12 +1,15 @@
 //register company page
 import { useState } from "react";
-
-const API_URL = "http://localhost:4000";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function CompanyRegister() {
+  const navigate = useNavigate();
+  const { registerCompany } = useAuth();
   const [form, setForm] = useState({
     companyName: "",
     companyEmail: "",
+    workspaceCode: "",
     username: "",
     email: "",
     phone: "",
@@ -19,7 +22,6 @@ export default function CompanyRegister() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,59 +30,29 @@ export default function CompanyRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     if (loading) return;
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/company`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          companyName: form.companyName.trim(),
-          companyEmail: form.companyEmail.trim().toLowerCase(),
+      await registerCompany({
+        companyName: form.companyName.trim(),
+        companyEmail: form.companyEmail.trim().toLowerCase(),
+        workspaceCode: form.workspaceCode.trim(),
+        contactDetails: {
           username: form.username.trim(),
           email: form.email.trim().toLowerCase(),
           password: form.password,
-          contactDetails: {
-            username: form.username.trim(),
-            email: form.email.trim().toLowerCase(),
-            phone: form.phone.trim(),
-            address: form.address.trim(),
-            city: form.city.trim(),
-            state: form.state.trim(),
-            country: form.country.trim(),
-          },
-        }),
+          phone: form.phone.trim(),
+          address: form.address.trim(),
+          city: form.city.trim(),
+          state: form.state.trim(),
+          country: form.country.trim(),
+        },
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Company registration failed");
-      }
-
-      setSuccess(
-        data.message || "Company registered successfully!"
-      );
-
-      setForm({
-        companyName: "",
-        companyEmail: "",
-        username: "",
-        email: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        country: "",
-        password: "",
-      });
+      navigate("/admin/dashboard", { replace: true });
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -105,12 +77,6 @@ export default function CompanyRegister() {
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
           {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
-          {success}
         </div>
       )}
 
@@ -141,6 +107,25 @@ export default function CompanyRegister() {
             onChange={handleChange}
             className={inputClass}
             placeholder="company@example.com"
+            required
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label
+            className="mb-1 block text-sm font-medium">
+            Workspace Code
+          </label>
+
+          <input
+            id="workspaceCode"
+            name="workspaceCode"
+            type="text"
+            value={form.workspaceCode}
+            onChange={handleChange}
+            className={inputClass}
+            placeholder="Enter company workspace code"
             required
             disabled={loading}
           />
