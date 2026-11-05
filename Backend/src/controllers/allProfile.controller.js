@@ -4,7 +4,8 @@ const getAllUser = async (req, res) => {
 
   try {
 
-    const users = await userModel.find().select("-password").lean();
+    const companyID = req.user.companyId;
+    const users = await userModel.find({ companyId: companyID }).select("-password").lean();
     const usersWithOnlineStatus = users.map((user) => ({
       ...user,
       isOnline: Boolean(user.isOnline),

@@ -4,6 +4,7 @@ import { projectModel } from "../../models/project.model.js";
 export const getProjects = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?.userid || req.user?._id;
+    const companyId = req.user.companyId;
     const userRole = req.user?.role;
 
     // 1. Check authentication
@@ -35,7 +36,7 @@ export const getProjects = async (req, res) => {
 
     // 3. Fetch projects from MongoDB
     const projects = await projectModel
-      .find(filter)
+      .find({ ...filter, companyId })
       .populate({
        path: "members",
        model: "userModel",

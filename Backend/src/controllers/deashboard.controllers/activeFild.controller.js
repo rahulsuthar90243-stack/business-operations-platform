@@ -3,8 +3,9 @@ import {activityModel} from "../../models/activity.model.js";
 const getActiveFild = async (req, res) => {
 
     try {
+        const companyId = req.user.companyId;
         const activeFild = await activityModel
-            .find({})
+            .find({ companyId })
             .populate("user", "username")
             .sort({ createdAt: -1 })
             .limit(10);

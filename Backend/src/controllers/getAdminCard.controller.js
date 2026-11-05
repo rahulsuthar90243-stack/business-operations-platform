@@ -4,13 +4,15 @@ import {ticketModel} from "../models/ticket.model.js";
 
  const statusCard = async (req, res) => {
   try {
-    const totalEmployee = await userModel.countDocuments({ role: "employee" });
+    const companyId = req.user.companyId;
 
-    const totalCustomer = await userModel.countDocuments({ role: "customer" });
+    const totalEmployee = await userModel.countDocuments({ role: "employee", companyId });
 
-    const activeProject = await projectModel.countDocuments({ status: "active" });
+    const totalCustomer = await userModel.countDocuments({ role: "customer", companyId });
 
-    const openTicket = await ticketModel.countDocuments({ status: "open" });
+    const activeProject = await projectModel.countDocuments({ status: "active", companyId });
+
+    const openTicket = await ticketModel.countDocuments({ status: "open", companyId });
 
     return res.status(200).json({
       success: true,
