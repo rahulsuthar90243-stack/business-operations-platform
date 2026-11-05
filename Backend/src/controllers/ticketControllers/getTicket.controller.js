@@ -3,7 +3,8 @@ import { projectModel } from "../../models/project.model.js";
 
 const getTickets = async (req, res) => {
   try {
-    const { id, role } = req.user;
+    const { id, role, companyId } = req.user;
+    
 
     let filter = {};
 
@@ -30,7 +31,7 @@ const getTickets = async (req, res) => {
     }
 
     const tickets = await ticketModel
-      .find(filter)
+      .find({ ...filter, companyId })
       .populate({
         path: "project",
         model: "projectModel",

@@ -25,6 +25,11 @@ const projectSchema = new mongoose.Schema(
       },
       default: "planned",
     },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Company ID is required"],
+    },
 
     manager: {
       type: mongoose.Schema.Types.ObjectId,

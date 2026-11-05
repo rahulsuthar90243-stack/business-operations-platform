@@ -24,6 +24,11 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Company Id are requird"]
+    },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
