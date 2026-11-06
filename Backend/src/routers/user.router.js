@@ -5,6 +5,10 @@ import getProfile from "../controllers/profile.controller.js";
 import getAllUser from "../controllers/allProfile.controller.js";
 import roleMiddleware from "../authenticatio.Middleware/role.middle.js";
 import changeUserRole from "../controllers/changeUserRole.controller.js"
+import {
+  getNotification,
+  markNotificationsRead,
+} from "../controllers/deashboard.controllers/notification.controller.js";
 
 const router = express.Router();
 
@@ -16,6 +20,14 @@ router.post("/logout", logout);
 router.get("/profile",
   authMiddleware,
   getProfile
+);
+router.get("/notifications",
+  authMiddleware,
+  getNotification
+);
+router.patch("/notifications/read",
+  authMiddleware,
+  markNotificationsRead
 );
 router.get("/users", 
     authMiddleware,

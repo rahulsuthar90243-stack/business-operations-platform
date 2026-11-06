@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { notification } from "../models/notification.model.js";
 
 
 
@@ -59,6 +60,26 @@ export const requestAccess = async (req, res) => {
       isOnline: false,
       lastSeen: new Date(),
     });
+
+    // Notify this workspace's admin that a new user is waiting for approval.
+    const admin = await userModel.findOne({
+      companyId: existingCompany._id,
+      role: "admin",
+    }).select("_id");
+
+    // Create a notification for the admin
+    if (admin) {
+      await notification.create({
+        recipient: admin._id,
+        sender: user._id,
+        companyId: existingCompany._id,
+        title: "New registration request",
+        message: `${user.username} requested to join the company.`,
+        type: "approval",
+        entityType: "user",
+        entityId: user._id,
+      });
+    }
 
     return res.status(201).json({
       message: "Access request submitted successfully.",
