@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Bell, ChevronDown, HelpCircle, Search } from "lucide-react";
+import { ChevronDown, HelpCircle, Search } from "lucide-react";
+import NotificationDropdown from "./NotificationDropdown.jsx";
 
 const formatDate = (date) =>
   new Intl.DateTimeFormat("en-US", {
@@ -32,7 +33,6 @@ const getInitials = (name = "") =>
  * @param {function} [props.onSearchChange]       (value: string) => void
  * @param {function} [props.onSearchSubmit]       (value: string) => void, fired on Enter
  * @param {boolean}  [props.showSearch=true]
- * @param {boolean}  [props.hasNotifications=false] Shows the red indicator on the bell
  * @param {function} [props.onNotificationsClick]
  * @param {boolean}  [props.showHelp=true]
  * @param {function} [props.onHelpClick]
@@ -50,7 +50,6 @@ export default function Header({
   onSearchChange,
   onSearchSubmit,
   showSearch = true,
-  hasNotifications = false,
   onNotificationsClick,
   showHelp = true,
   onHelpClick,
@@ -136,19 +135,10 @@ export default function Header({
           </form>
         )}
 
-        <button
-          type="button"
-          onClick={onNotificationsClick}
-          className={iconButton}
-          aria-label={
-            hasNotifications ? "Notifications (unread)" : "Notifications"
-          }
-        >
-          <Bell className="h-5 w-5" aria-hidden="true" />
-          {hasNotifications && (
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
-          )}
-        </button>
+        <NotificationDropdown
+          onNotificationsClick={onNotificationsClick}
+          buttonClassName={iconButton}
+        />
 
         {showHelp && (
           <button
@@ -211,7 +201,6 @@ export default function Header({
  * <Header
  *   title="Admin Dashboard"
  *   breadcrumb="Overview"
- *   hasNotifications
  *   user={{ name: "Alex Rivera", role: "Administrator" }}
  *   onSearchSubmit={(q) => navigate(`/search?q=${q}`)}
  *   onProfileClick={() => setProfileOpen((o) => !o)}
