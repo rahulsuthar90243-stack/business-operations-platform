@@ -5,6 +5,7 @@ import getProfile from "../controllers/profile.controller.js";
 import getAllUser from "../controllers/allProfile.controller.js";
 import roleMiddleware from "../authenticatio.Middleware/role.middle.js";
 import changeUserRole from "../controllers/changeUserRole.controller.js"
+import updateManagedUser from "../controllers/updateManagedUser.controller.js";
 import {
   getNotification,
   markNotificationsRead,
@@ -33,6 +34,12 @@ router.get("/users",
     authMiddleware,
     roleMiddleware("admin"),
     getAllUser
+)
+
+router.patch("/users/:userId",
+    authMiddleware,
+    roleMiddleware("admin"),
+    updateManagedUser
 )
 
 router.patch(
