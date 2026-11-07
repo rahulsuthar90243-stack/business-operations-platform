@@ -6,13 +6,15 @@ export const rejectUser = async (req, res) => {
     const { userId } = req.params;
 
     const user = await userModel.findOne({
-    _id: userId,
-    accessStatus: { $in: ["pending", "approved"] },
+      _id: userId,
+      companyId: req.user.companyId,
+      accessStatus: "pending",
     });
 
     if (!user) {
       return res.status(404).json({
-        message: "User not found.",
+        success: false,
+        message: "Pending user not found in your company.",
       });
     }
 
@@ -21,6 +23,7 @@ export const rejectUser = async (req, res) => {
     await user.save();
 
     return res.status(200).json({
+      success: true,
       message: "User rejected successfully.",
       accessStatus: user.accessStatus,
     });
@@ -28,6 +31,7 @@ export const rejectUser = async (req, res) => {
     console.error("Reject user error:", error);
 
     return res.status(500).json({
+      success: false,
       message: "Failed to reject user.",
     });
   }
