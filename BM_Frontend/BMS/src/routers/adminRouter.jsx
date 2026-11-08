@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import UserManagement from '../pages/admin/userManagement';
 import ApiDocs from '../pages/admin/ApiDocs';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../config/navigationConfig';
@@ -51,7 +52,7 @@ export default createRoutesFromElements(
       <Route id="admin-home" index element={<Navigate to="dashboard" replace />} />
       <Route id="admin-dashboard" path="dashboard" element={<AdminDashboard />} />
       {/* Placeholders for future admin pages */}
-      <Route id="admin-users" path="users" element={<Placeholder name="Users" />} />
+      <Route id="admin-users" path="users" element={<UserManagement />} />
       <Route id="admin-projects" path="projects" element={<Placeholder name="Projects" />} />
       <Route id="admin-customers" path="customers" element={<Placeholder name="Customers" />} />
       <Route id="admin-tickets" path="tickets" element={<Placeholder name="Tickets" />} />
