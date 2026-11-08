@@ -39,8 +39,44 @@ async function getAllUser() {
   return apiRequest("/users");
 }
 
+async function approveUser(userId) {
+  return apiRequest(`/approve/${encodeURIComponent(userId)}`, { method: "POST" });
+}
+
+async function rejectUser(userId) {
+  return apiRequest(`/reject/${encodeURIComponent(userId)}`, { method: "POST" });
+}
+
+async function updateUser(userId, userData) {
+  return apiRequest(`/users/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(userData),
+  });
+}
+
 async function getActivityLogs() {
   return apiRequest("/activity/logs");
 }
 
-export { getAdminCardStats, getProjectStatus, getAllUser, getActivityLogs };
+async function getNotifications() {
+  return apiRequest("/notifications");
+}
+
+async function markNotificationsRead(notificationIds) {
+  return apiRequest("/notifications/read", {
+    method: "PATCH",
+    body: JSON.stringify({ notificationIds }),
+  });
+}
+
+export {
+  getAdminCardStats,
+  getProjectStatus,
+  getAllUser,
+  approveUser,
+  rejectUser,
+  updateUser,
+  getActivityLogs,
+  getNotifications,
+  markNotificationsRead,
+};
