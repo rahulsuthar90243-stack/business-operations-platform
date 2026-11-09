@@ -104,25 +104,34 @@ export const createProject = async (req, res) => {
       });
     }
 
-    // Members validation if provided
+    // Members must be employees from the same company as the project.
     let formattedMembers = [];
-    if (members) {
-      if (!Array.isArray(members)) {
+    if (members !== undefined) {
+      if (
+        !Array.isArray(members) ||
+        members.some((memberId) => !mongoose.Types.ObjectId.isValid(memberId))
+      ) {
         return res.status(400).json({
           success: false,
-          message: "Members must be an array of user IDs",
+          message: "Members must be an array of valid employee IDs",
         });
       }
 
-      for (const memberId of members) {
-        if (!mongoose.Types.ObjectId.isValid(memberId)) {
-          return res.status(400).json({
-            success: false,
-            message: `Invalid member ID: ${memberId}`,
-          });
-        }
+      formattedMembers = [...new Set(members)];
+      const companyEmployees = await userModel
+        .find({
+          _id: { $in: formattedMembers },
+          companyId: req.user?.companyId,
+          role: "employee",
+        })
+        .select("_id");
+
+      if (companyEmployees.length !== formattedMembers.length) {
+        return res.status(400).json({
+          success: false,
+          message: "All project members must be employees in your company",
+        });
       }
-      formattedMembers = members;
     }
 
     // Create the project document
@@ -130,6 +139,7 @@ export const createProject = async (req, res) => {
       name: name.trim(),
       description: description ? description.trim() : "",
       status: status || "planned",
+      companyId: req.user?.companyId,
       manager: assignedManager,
       createdBy: userId,
       members: formattedMembers,
@@ -167,8 +177,4 @@ export const createProject = async (req, res) => {
       error: error.message,
     });
   }
-};
-
-export default {
-  createProject,
 };
