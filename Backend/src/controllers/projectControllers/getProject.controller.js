@@ -38,9 +38,23 @@ export const getProjects = async (req, res) => {
     const projects = await projectModel
       .find({ ...filter, companyId })
       .populate({
-       path: "members",
-       model: "userModel",
-       select: "username email"
+        path: "manager",
+        model: "userModel",
+        select: "username email role",
+      })
+      .populate({
+        path: "createdBy",
+        model: "userModel",
+        select: "username email role",
+      })
+      .populate({
+        path: "members",
+        model: "userModel",
+        select: "username email role",
+      })
+      .populate({
+        path: "companyId",
+        select: "companyName",
       })
       .sort({ createdAt: -1 });
 
