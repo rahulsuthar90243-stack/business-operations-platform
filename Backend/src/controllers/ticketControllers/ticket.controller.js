@@ -25,8 +25,48 @@ export const createTicket = async (req, res) => {
       });
     }
 
+    // Extract and validate request data
     const { projectId } = req.params;
-    const { title, description, assignedTo } = req.body;
+    const {
+      title,
+      description,
+      assignedTo,
+      status = "open",
+      priority = "medium",
+      dueDate = null,
+    } = req.body;
+    const normalizedPriority = priority === "urgent" ? "critical" : priority;
+    const allowedStatuses = [
+      "open",
+      "in_progress",
+      "in_review",
+      "resolved",
+      "closed",
+      "escalated",
+    ];
+    const allowedPriorities = ["low", "medium", "high", "critical"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ticket status",
+      });
+    }
+
+    if (!allowedPriorities.includes(normalizedPriority)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ticket priority",
+      });
+    }
+
+    const parsedDueDate = dueDate ? new Date(dueDate) : null;
+    if (dueDate && Number.isNaN(parsedDueDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid due date",
+      });
+    }
 
     // Validate project ID
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
@@ -56,6 +96,13 @@ export const createTicket = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Project not found",
+      });
+    }
+
+    if (project.companyId?.toString() !== req.user.companyId?.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot create tickets for this company",
       });
     }
 
@@ -98,7 +145,11 @@ export const createTicket = async (req, res) => {
 
       const employee = await userModel.findById(assignedTo);
 
-      if (!employee || employee.role !== "employee") {
+      if (
+        !employee ||
+        employee.role !== "employee" ||
+        employee.companyId?.toString() !== project.companyId.toString()
+      ) {
         return res.status(400).json({
           success: false,
           message: "Invalid employee",
@@ -127,8 +178,9 @@ export const createTicket = async (req, res) => {
       project: project._id,
       createdBy: userId,
       assignedTo: assignedEmployeeId,
-      status: "open",
-      priority: "medium",
+      status,
+      priority: normalizedPriority,
+      dueDate: parsedDueDate,
     });
 
     await logActivity({
