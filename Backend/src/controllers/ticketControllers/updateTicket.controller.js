@@ -1,5 +1,7 @@
+import mongoose from "mongoose";
 import { ticketModel } from "../../models/ticket.model.js";
 import { projectModel } from "../../models/project.model.js";
+import { userModel } from "../../models/user.model.js";
 import logActivity from "../../Utils/logActivity.js";
 
  const updateTicket = async (req, res) => {
@@ -17,12 +19,22 @@ import logActivity from "../../Utils/logActivity.js";
       });
     }
 
+    
+    if (ticket.companyId?.toString() !== req.user.companyId?.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot update tickets for this company",
+      });
+    }
+
     // 2. Allowed fields
     const allowedFields = [
       "title",
       "description",
       "status",
       "priority",
+      "assignedTo",
+      "dueDate",
     ];
 
     const updates = {};
@@ -30,6 +42,48 @@ import logActivity from "../../Utils/logActivity.js";
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field];
+      }
+    }
+
+    // Validate status and priority
+    if (updates.assignedTo !== undefined) {
+      if (updates.assignedTo === null || updates.assignedTo === "") {
+        updates.assignedTo = null;
+      } else {
+        if (!mongoose.Types.ObjectId.isValid(updates.assignedTo)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid assigned employee ID",
+          });
+        }
+
+        const employee = await userModel.findOne({
+          _id: updates.assignedTo,
+          companyId: ticket.companyId,
+          role: "employee",
+        });
+
+        if (!employee) {
+          return res.status(400).json({
+            success: false,
+            message: "Assigned employee must be an employee in your company",
+          });
+        }
+      }
+    }
+
+    if (updates.dueDate !== undefined) {
+      if (updates.dueDate === null || updates.dueDate === "") {
+        updates.dueDate = null;
+      } else {
+        const parsedDueDate = new Date(updates.dueDate);
+        if (Number.isNaN(parsedDueDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid due date",
+          });
+        }
+        updates.dueDate = parsedDueDate;
       }
     }
 
