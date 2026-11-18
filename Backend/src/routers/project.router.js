@@ -5,6 +5,7 @@ import { createProject } from "../controllers/projectControllers/project.control
 import { updateProject } from "../controllers/projectControllers/updateProject.js";
 import {getProjects} from "../controllers/projectControllers/getProject.controller.js";
 import { addProjectMember } from "../controllers/projectControllers/addProjectMember.controller.js";
+import getCompanyEmployees from "../controllers/projectControllers/getCompanyEmployees.controller.js";
 
 const router = express.Router();
 
@@ -23,6 +24,12 @@ router.patch("/project/:projectId",
 router.get("/get/project", 
     authMiddleware,
     getProjects,
+)
+
+router.get("/employees",
+    authMiddleware,
+    roleMiddleware("admin", "manager", "employee"),
+    getCompanyEmployees,
 )
 
 router.post("/:projectId/members", 

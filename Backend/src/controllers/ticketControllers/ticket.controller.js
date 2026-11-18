@@ -143,28 +143,16 @@ export const createTicket = async (req, res) => {
         });
       }
 
-      const employee = await userModel.findById(assignedTo);
+      const employee = await userModel.findOne({
+        _id: assignedTo,
+        companyId: project.companyId,
+        role: "employee",
+      });
 
-      if (
-        !employee ||
-        employee.role !== "employee" ||
-        employee.companyId?.toString() !== project.companyId.toString()
-      ) {
+      if (!employee) {
         return res.status(400).json({
           success: false,
-          message: "Invalid employee",
-        });
-      }
-
-      // Assigned employee must belong to this project
-      const isProjectMember = project.members.some(
-        (member) => member.toString() === employee._id.toString()
-      );
-
-      if (!isProjectMember) {
-        return res.status(400).json({
-          success: false,
-          message: "Employee is not a member of this project",
+          message: "Assigned employee must be an employee in your company",
         });
       }
 
@@ -176,6 +164,7 @@ export const createTicket = async (req, res) => {
       title: title.trim(),
       description: description.trim(),
       project: project._id,
+      companyId: project.companyId,
       createdBy: userId,
       assignedTo: assignedEmployeeId,
       status,

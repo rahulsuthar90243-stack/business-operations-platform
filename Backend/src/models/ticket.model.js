@@ -36,7 +36,7 @@ const ticketSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["open", "in_progress", "in_review", "resolved", "closed"],
+      enum: ["open", "in_progress", "in_review", "resolved", "closed", "escalated"],
       default: "open",
       index: true,
     },
@@ -44,6 +44,10 @@ const ticketSchema = new mongoose.Schema(
       type: String,
       enum: ["low", "medium", "high", "critical"],
       default: "medium",
+    },
+    dueDate: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true } // adds createdAt and updatedAt
