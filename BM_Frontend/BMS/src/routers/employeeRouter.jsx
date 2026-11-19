@@ -8,6 +8,7 @@ import {
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../config/navigationConfig';
+import TicketManagementPage from '../pages/admin/ticketPage/tickets.jsx';
 
 const Placeholder = ({ name }) => (
   <div className="rounded-xl bg-white p-6 shadow-sm text-slate-700">{name} page under construction.</div>
@@ -53,7 +54,7 @@ export default createRoutesFromElements(
       <Route id="employee-dashboard" path="dashboard" element={<Placeholder name="Employee Dashboard" />} />
       <Route id="employee-tasks" path="tasks" element={<Placeholder name="My Tasks" />} />
       <Route id="employee-projects" path="projects" element={<Placeholder name="My Projects" />} />
-      <Route id="employee-tickets" path="tickets" element={<Placeholder name="Tickets" />} />
+      <Route id="employee-tickets" path="tickets" element={<TicketManagementPage />} />
       <Route id="employee-time-tracking" path="time-tracking" element={<Placeholder name="Time Tracking" />} />
       <Route id="employee-schedule" path="schedule" element={<Placeholder name="Schedule" />} />
       <Route id="employee-calendar" path="calendar" element={<Placeholder name="Calendar" />} />

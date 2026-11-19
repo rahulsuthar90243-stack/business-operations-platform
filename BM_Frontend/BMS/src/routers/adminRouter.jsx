@@ -8,6 +8,8 @@ import {
 import DashboardLayout from '../layouts/DashboardLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserManagement from '../pages/admin/userManagement';
+import ProjectPage from '../pages/admin/projectsPage/project';
+import TicketManagementPage from '../pages/admin/ticketPage/tickets.jsx';
 import ApiDocs from '../pages/admin/ApiDocs';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../config/navigationConfig';
@@ -53,9 +55,9 @@ export default createRoutesFromElements(
       <Route id="admin-dashboard" path="dashboard" element={<AdminDashboard />} />
       {/* Placeholders for future admin pages */}
       <Route id="admin-users" path="users" element={<UserManagement />} />
-      <Route id="admin-projects" path="projects" element={<Placeholder name="Projects" />} />
+      <Route id="admin-projects" path="projects" element={<ProjectPage />} />
       <Route id="admin-customers" path="customers" element={<Placeholder name="Customers" />} />
-      <Route id="admin-tickets" path="tickets" element={<Placeholder name="Tickets" />} />
+      <Route id="admin-tickets" path="tickets" element={<TicketManagementPage />} />
       <Route id="admin-analytics" path="analytics" element={<Placeholder name="Analytics" />} />
       <Route id="admin-settings" path="settings" element={<Placeholder name="Settings" />} />
       <Route id="admin-audit-logs" path="audit-logs" element={<Placeholder name="Audit Logs" />} />

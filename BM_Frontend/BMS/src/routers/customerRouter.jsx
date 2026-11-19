@@ -9,6 +9,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../config/navigationConfig';
 import CustomerDashboard from '../pages/customer/CustomerDashboard.jsx';
+import TicketManagementPage from '../pages/admin/ticketPage/tickets.jsx';
 
 const Placeholder = ({ name }) => (
   <div className="rounded-xl bg-white p-6 shadow-sm text-slate-700">{name} page under construction.</div>
@@ -53,7 +54,7 @@ export default createRoutesFromElements(
       <Route id="customer-home" index element={<Navigate to="dashboard" replace />} />
       <Route id="customer-dashboard" path="dashboard" element={<CustomerDashboard />} />
       <Route id="customer-projects" path="projects" element={<Placeholder name="My Projects" />} />
-      <Route id="customer-tickets" path="tickets" element={<Placeholder name="Support Tickets" />} />
+      <Route id="customer-tickets" path="tickets" element={<TicketManagementPage />} />
       <Route id="customer-messages" path="messages" element={<Placeholder name="Messages" />} />
       <Route id="customer-orders" path="orders" element={<Placeholder name="Orders" />} />
       <Route id="customer-invoices" path="invoices" element={<Placeholder name="Invoices" />} />
