@@ -20,7 +20,13 @@ async function apiRequest(endpoint, options = {}) {
       throw new Error(result.message || "API request failed");
     }
 
-    return result.data ?? result.users;
+    return (
+      result.data ??
+      result.users ??
+      result.employees ??
+      result.projects ??
+      result.project
+    );
   } catch (error) {
     console.error("API request error:", error);
     throw error;
@@ -69,6 +75,28 @@ async function markNotificationsRead(notificationIds) {
   });
 }
 
+async function getProjects() {
+  return apiRequest("/get/project");
+}
+
+async function getCompanyEmployees() {
+  return apiRequest("/employees");
+}
+
+async function createProject(projectData) {
+  return apiRequest("/project", {
+    method: "POST",
+    body: JSON.stringify(projectData),
+  });
+}
+
+async function updateProject(projectId, projectData) {
+  return apiRequest(`/project/${encodeURIComponent(projectId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(projectData),
+  });
+}
+
 export {
   getAdminCardStats,
   getProjectStatus,
@@ -79,4 +107,9 @@ export {
   getActivityLogs,
   getNotifications,
   markNotificationsRead,
+  getProjects,
+  getCompanyEmployees,
+  createProject,
+  updateProject,
 };
+
