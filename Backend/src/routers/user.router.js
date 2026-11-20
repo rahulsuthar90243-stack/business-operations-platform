@@ -6,6 +6,7 @@ import getAllUser from "../controllers/allProfile.controller.js";
 import roleMiddleware from "../authenticatio.Middleware/role.middle.js";
 import changeUserRole from "../controllers/changeUserRole.controller.js"
 import updateManagedUser from "../controllers/updateManagedUser.controller.js";
+import createManagedUser from "../controllers/createManagedUser.controller.js";
 import {
   getNotification,
   markNotificationsRead,
@@ -34,6 +35,12 @@ router.get("/users",
     authMiddleware,
     roleMiddleware("admin"),
     getAllUser
+)
+
+router.post("/users",
+    authMiddleware,
+    roleMiddleware("admin"),
+    createManagedUser
 )
 
 router.patch("/users/:userId",

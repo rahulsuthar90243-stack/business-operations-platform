@@ -34,6 +34,16 @@ export async function createTicket(projectId, ticket) {
   return result.ticket;
 }
 
+export async function deleteTicket(ticketId){
+  const result = await ticketRequest(
+    `/delete/ticket/${encodeURIComponent(ticketId)}`,
+    {
+      method: "POST",
+    },
+  );
+  return result;
+}
+
 export async function updateTicket(ticketId, updates) {
   const result = await ticketRequest(
     `/update/ticket/${encodeURIComponent(ticketId)}`,
