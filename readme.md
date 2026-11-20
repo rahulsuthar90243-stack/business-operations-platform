@@ -6,7 +6,8 @@ WorkOS is a role based workspace for managing users, projects, and support ticke
 
 The current application includes company registration, sign in and registration, role based access, admin user management, project management, ticket management, notifications, and dashboard pages. Some navigation destinations are still placeholders; see [Frontend status](#frontend-status).
 
-![WorkOS workspace banner](assets/workos-banner.png)
+![WorkOS business operations platform dashboard and workspace preview](./BM_Frontend/BMS/src/assets/image.png)
+
 
 ## Features
 
