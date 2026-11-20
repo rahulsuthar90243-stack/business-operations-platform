@@ -45,6 +45,13 @@ async function getAllUser() {
   return apiRequest("/users");
 }
 
+async function createUser(userData) {
+  return apiRequest("/users", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+}
+
 async function approveUser(userId) {
   return apiRequest(`/approve/${encodeURIComponent(userId)}`, { method: "POST" });
 }
@@ -101,6 +108,7 @@ export {
   getAdminCardStats,
   getProjectStatus,
   getAllUser,
+  createUser,
   approveUser,
   rejectUser,
   updateUser,
