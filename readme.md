@@ -1,40 +1,45 @@
 # Business Management System
 
-A role-based business operations application with a React frontend and an Express/MongoDB API. It includes account registration and login, role-specific dashboards, project management, project membership, and ticket management.
+WorkOS is a role based workspace for managing users, projects, and support tickets. The application has a React frontend and an Express API backed by MongoDB.
 
-## Current features
+## Overview
 
-- Register and log in with email and password; public registration creates a `customer` account.
-- Authenticate API requests with a JWT in an HTTP-only cookie or a bearer token.
-- View dashboards for admin, manager, employee, and customer roles.
-- Create projects, view projects according to role, and use the project-membership API (currently affected by the validation issue noted below).
-- Create, view, update, and delete tickets, with role- and project-based access checks.
-- Display role-specific frontend dashboard areas. Several dashboard pages are currently placeholders; the admin dashboard currently uses mock data.
+The current application includes company registration, sign in and registration, role based access, admin user management, project management, ticket management, notifications, and dashboard pages. Some navigation destinations are still placeholders; see [Frontend status](#frontend-status).
 
-## Project structure
+![WorkOS workspace banner](assets/workos-banner.png)
+
+## Features
+
+- Register a company and its first admin account, or request access with a customer account.
+- Sign in and sign out; protected API requests use a JWT in an HTTP only cookie or bearer authorization header.
+- Admin user management: list company users, create managed users, edit user details and access status, and change roles.
+- Company scoped projects: create and update projects, list projects by the signed in user's access, and manage project membership.
+- Project tickets: create, list, update, and delete tickets with status, priority, assignee, and due date fields.
+- Role specific dashboard APIs, status summaries, activity logs, and notifications.
+- Role gated frontend navigation for admin, manager, employee, and customer accounts.
+
+## Project layout
 
 ```text
-Backend/                 Express API and MongoDB models
-BM_Frontend/BMS/         React, Vite, and Tailwind CSS frontend
+Backend/                 Express API, MongoDB models, and controllers
+BM_Frontend/BMS/         React and Vite frontend
 ```
 
 ## Requirements
 
 - Node.js and npm
-- A MongoDB instance, local or hosted
+- MongoDB, local or hosted
 
-## Setup and run
+## Run locally
 
 ### Backend
-
-In a terminal, install the backend dependencies:
 
 ```bash
 cd Backend
 npm install
 ```
 
-Create `Backend/.env` with values for the backend configuration:
+Create `Backend/.env`:
 
 ```env
 PORT=4000
@@ -44,19 +49,19 @@ JWT_SECRET=replace_with_a_long_random_secret
 NODE_ENV=development
 ```
 
-`MONGODB_URL`, `DB_NAME`, and `JWT_SECRET` are required. The API builds the MongoDB connection string by joining `MONGODB_URL` and `DB_NAME`. Set `PORT=4000` to match the frontend's current API URL. The backend CORS configuration allows the Vite development origin `http://localhost:5173`.
+`MONGODB_URL`, `DB_NAME`, and `JWT_SECRET` are required. The API joins the Mongo URL and database name. The frontend currently uses `http://localhost:4000/api`; local frontend origins are allowed by CORS.
 
-Start the API:
+Run the backend:
 
 ```bash
 npm run dev
 ```
 
-The backend also provides `npm start` for a regular Node.js start. When running, `GET /` returns a basic service message.
+Use `npm start` for a regular Node.js start. `GET /` returns a service message.
 
 ### Frontend
 
-In a second terminal, install and run the frontend:
+In a second terminal:
 
 ```bash
 cd BM_Frontend/BMS
@@ -64,66 +69,76 @@ npm install
 npm run dev
 ```
 
-Vite serves the frontend at `http://localhost:5173` by default. The frontend currently sends API requests to `http://localhost:4000`.
+Vite serves the app at `http://localhost:5173` by default.
 
-## Frontend routes
+## Frontend routes and status
 
-- `/register` and `/login` — account registration and login.
-- `/admin/dashboard`, `/manager/dashboard`, `/employee/dashboard`, `/customer/dashboard` — role-specific dashboard routes.
-- Each role also has additional navigation routes. Pages marked “under construction” are UI placeholders and are not complete features.
+- `/register`, `/login` — account entry.
+- `/admin/dashboard`, `/admin/users`, `/admin/projects`, `/admin/tickets`, `/admin/api-docs` — implemented admin dashboard and management pages.
+- `/manager/*`, `/employee/*`, `/customer/*` — role gated sections. Customer dashboard and ticket pages are implemented; several other destinations render an “under construction” placeholder.
 
-## API
+## API reference
 
-All endpoints are mounted under `/api`. Requests and responses use JSON unless otherwise noted.
+All routes below are mounted under `/api`. Send JSON request bodies where applicable. Protected routes require a valid login token; the admin routes require the admin role.
 
-### Authentication and users
-
-| Method | Path | Access | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/api/register` | Public | Register a customer account. Requires `username`, `email`, and `password`; any role supplied by a client is not used. |
-| `POST` | `/api/login` | Public | Authenticate with `email` and `password`; sets the JWT cookie. |
-| `POST` | `/api/logout` | Public | Clear the JWT cookie. |
-| `GET` | `/api/profile` | Authenticated | Return the signed-in user's profile. |
-| `GET` | `/api/users` | Admin | Return the user list without password fields. |
-| `PATCH` | `/api/users/:userId/role` | Admin, manager | Update a user's role. Body: `{"role":"customer|employee|manager|admin"}`. |
-
-### Dashboards
+### Accounts, users, notifications, and company
 
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
-| `GET` | `/api/admin` | Admin | Return admin dashboard data. |
-| `GET` | `/api/status/card` | Authenticated | Return status-card data. |
-| `GET` | `/api/manager` | Admin, manager | Return manager dashboard data. |
-| `GET` | `/api/employee` | Admin, manager, employee | Return employee dashboard data. |
-| `GET` | `/api/customer` | Any authenticated role | Return customer dashboard data. |
+| `POST` | `/api/company` | Public | Create a company and its initial admin. Requires `companyName`, `companyEmail`, `workspaceCode`, and `contactDetails` (`username`, `email`, `password`, `phone`, `address`, `city`, `state`, `country`). |
+| `POST` | `/api/register` | Public | Request access with `username`, `email`, and `password`; public registration creates a customer account. |
+| `POST` | `/api/login` | Public | Sign in with `email` and `password`. |
+| `POST` | `/api/logout` | Public | Clear the login cookie. |
+| `GET` | `/api/profile` | Authenticated | Get the signed in user's profile. |
+| `GET` | `/api/users` | Admin | List users in the admin's company. |
+| `POST` | `/api/users` | Admin | Create a company user. Body: `{"username":"Alex Doe","email":"alex@example.com","password":"ExamplePass123!","role":"employee"}`. Roles: `admin`, `manager`, `employee`, `customer`. Password must be 8–72 UTF-8 bytes. |
+| `PATCH` | `/api/users/:userId` | Admin | Update any of `username`, `email`, `role`, and `accessStatus` (`pending`, `approved`, `rejected`). |
+| `PATCH` | `/api/users/:userId/role` | Admin, manager | Change a user's role. Body: `{"role":"employee"}`. |
+| `GET` | `/api/notifications` | Authenticated | Get notifications for the signed in user. |
+| `PATCH` | `/api/notifications/read` | Authenticated | Mark notifications as read. |
+| `GET` | `/api/getcompany/:adminId` | Admin | Get company information for an admin. |
+| `POST` | `/api/approve/:userId` | Admin | Approve a user access request. |
+| `POST` | `/api/reject/:userId` | Admin | Reject a user access request. |
+
+### Dashboards and activity
+
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin` | Admin | Get admin dashboard data. |
+| `GET` | `/api/status/card` | Admin | Get admin status cards. |
+| `GET` | `/api/status/project` | Admin | Get project status summary. |
+| `GET` | `/api/activity/logs` | Authenticated | Get activity log data. |
+| `GET` | `/api/manager` | Admin, manager | Get manager dashboard data. |
+| `GET` | `/api/employee` | Admin, manager, employee | Get employee dashboard data. |
+| `GET` | `/api/customer` | Authenticated | Get customer dashboard data. |
 
 ### Projects
 
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
-| `POST` | `/api/project` | Admin, manager | Create a project. Requires `name`, `startDate`, and `dueDate`; accepts `description`, `status`, `manager`, and `members`. |
-| `GET` | `/api/get/project` | Admin, manager, employee | List projects visible to the signed-in user. Admins see all projects, managers see their projects, and employees see projects they belong to. |
-| `POST` | `/api/:projectId/members` | Admin, manager | Intended to add an employee to a project. Body: `{"employeeId":"<user-id>"}`. Current employee-ID validation rejects valid IDs, so this endpoint may return `400` until that backend issue is fixed. |
+| `POST` | `/api/project` | Admin, manager | Create a project. Requires `name`, `manager`, `startDate`, and `dueDate`; accepts `description`, `status`, and `members`. |
+| `PATCH` | `/api/project/:projectId` | Admin, manager | Update project fields. |
+| `GET` | `/api/get/project` | Authenticated | List projects visible to the signed in user. |
+| `GET` | `/api/employees` | Admin, manager, employee | List company employees. |
+| `POST` | `/api/:projectId/members` | Authenticated | Add a project member; body: `{"employeeId":"<user-id>"}`. |
 
-Project status values are `planned`, `active`, `on-hold`, `completed`, and `cancelled`. A project's due date must be on or after its start date.
+Project status values are `planned`, `active`, `on-hold`, `completed`, and `cancelled`. Due date must be on or after the start date.
 
 ### Tickets
 
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
-| `POST` | `/api/ticket/:projectId` | Admin, manager, employee | Create a ticket in a project. Requires `title` and `description`; optionally accepts `assignedTo` with an employee ID. |
-| `GET` | `/api/tickets` | Admin, manager, employee, customer | List tickets visible to the signed-in user. |
-| `POST` | `/api/update/ticket/:ticketId` | Admin, manager, assigned employee | Update ticket fields. Accepted fields: `title`, `description`, `status`, and `priority`. |
-| `POST` | `/api/delete/ticket/:ticketId` | Admin, manager, assigned employee | Delete a ticket. |
+| `POST` | `/api/ticket/:projectId` | Authenticated | Create a project ticket with `title` and `description`; optionally provide `assignedTo`, `priority`, and `dueDate`. |
+| `GET` | `/api/tickets` | Authenticated | List tickets visible to the signed in user. |
+| `POST` | `/api/update/ticket/:ticketId` | Authenticated | Update ticket fields such as `title`, `description`, `status`, `priority`, `assignedTo`, or `dueDate`. |
+| `POST` | `/api/delete/ticket/:ticketId` | Authenticated | Delete a ticket, subject to controller access checks. |
 
-Ticket status values are `open`, `in_progress`, `in_review`, `resolved`, and `closed`. Priority values are `low`, `medium`, `high`, and `critical`. Admins can access all tickets; managers are scoped to tickets in their projects; employees can access tickets assigned to them; customers can view tickets they created.
+Ticket statuses include `open`, `in_progress`, `in_review`, `resolved`, `closed`, and `escalated`. Priorities are `low`, `medium`, `high`, and `critical`. Controllers apply company, project, role, or assignment checks where implemented.
 
-### Authentication details
+## Authentication and security notes
 
-Protected API routes accept the JWT from the `token` cookie or the authorization request header. Login and registration set an HTTP-only `token` cookie. For production, configure HTTPS and set `NODE_ENV=production` so the cookie is marked secure.
+The API reads JWTs from the `token` cookie or the `Authorization: Bearer <token>` header. Login and company registration set an HTTP only `token` cookie. For production, use HTTPS and set `NODE_ENV=production` so the cookie is marked secure. Keep secrets in environment files and do not commit credentials.
 
-## Development notes
+## Frontend status
 
-- Keep secrets and local configuration in environment files; do not commit `.env` files or credentials.
-- Public registration creates customer accounts. Assign elevated roles only through a trusted admin-controlled process.
-- The frontend currently has dedicated login and registration flows. Some dashboard destinations are placeholders, and the admin dashboard's displayed sample metrics and activity are mock data.
+The admin dashboard includes a dashboard UI, user management, projects, tickets, and API documentation. The customer dashboard is implemented. Several manager, employee, and customer navigation pages are currently placeholders, and some admin navigation pages (customers, analytics, settings, audit logs) are placeholders. UI presence does not necessarily mean that a matching fully featured page or API is available.
