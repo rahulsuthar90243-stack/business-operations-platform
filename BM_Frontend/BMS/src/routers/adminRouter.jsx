@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
-import UserManagement from '../pages/admin/userManagement';
+import UserManagement from '../pages/admin/userManagementPage/userManagement.jsx';
 import ProjectPage from '../pages/admin/projectsPage/project';
 import TicketManagementPage from '../pages/admin/ticketPage/tickets.jsx';
 import ApiDocs from '../pages/admin/ApiDocs';

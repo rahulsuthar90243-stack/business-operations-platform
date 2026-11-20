@@ -113,10 +113,10 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
-  const register = useCallback(async ({ username, email, password }) => {
+  const register = useCallback(async ({ username, email, workspaceCode ,password }) => {
     return request("/api/register", {
       method: "POST",
-      body: JSON.stringify({ username, email: email.trim(), password }),
+      body: JSON.stringify({ username, email: email.trim(), workspaceCode, password }),
     });
   }, []);
 
