@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { projectModel } from "../../models/project.model.js";
 import { userModel } from "../../models/user.model.js";
+import logActivity from "../../Utils/logActivity.js";
 
 export const updateProject = async (req, res) => {
   try {
@@ -159,6 +160,13 @@ export const updateProject = async (req, res) => {
     }
 
     await project.save();
+    await logActivity({
+      userId,
+      action: "updated",
+      entityType: "project",
+      entityId: project._id,
+      description: `Updated project: ${project.name}`,
+    });
 
     const updatedProject = await projectModel
       .findById(project._id)

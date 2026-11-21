@@ -44,12 +44,14 @@ export default function ActivityFeed({
 }) {
   const [fetchedActivities, setFetchedActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchActivities = async () => {
       try {
+        setError("");
         const activityData = await getActivityLogs();
         const formattedActivities = getActiveUsers(activityData);
 
@@ -62,6 +64,7 @@ export default function ActivityFeed({
         console.error("Error fetching activity logs:", error);
         if (isMounted) {
           setFetchedActivities([]);
+          setError(error.message || "Unable to load activity.");
         }
       } finally {
         if (isMounted) {
@@ -71,11 +74,17 @@ export default function ActivityFeed({
     };
 
     fetchActivities();
+    const refreshInterval = live
+      ? window.setInterval(fetchActivities, 15000)
+      : undefined;
 
     return () => {
       isMounted = false;
+      if (refreshInterval !== undefined) {
+        window.clearInterval(refreshInterval);
+      }
     };
-  }, []);
+  }, [live]);
 
   return (
     <section
@@ -100,6 +109,10 @@ export default function ActivityFeed({
         {loading ? (
           <p className="py-8 text-center text-sm text-gray-400" role="status">
             Loading activity...
+          </p>
+        ) : error ? (
+          <p className="py-8 text-center text-sm text-red-600" role="alert">
+            {error}
           </p>
         ) : fetchedActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8 text-sm text-gray-400">

@@ -11,7 +11,7 @@ const activitySchema = new mongoose.Schema(
       type: String,
       required: [true, "Action is required"],
       enum: {
-        values: ["created", "updated", "deleted", "assigned"],
+        values: ["created", "updated", "deleted", "assigned", "added_member"],
         message: "{VALUE} is not a valid action",
       },
     },

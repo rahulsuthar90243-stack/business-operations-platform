@@ -156,6 +156,16 @@ export const createTicket = async (req, res) => {
         });
       }
 
+      const isProjectMember = (project.members || []).some(
+        (memberId) => memberId.toString() === employee._id.toString(),
+      );
+      if (!isProjectMember) {
+        return res.status(400).json({
+          success: false,
+          message: "Assigned employee must be a member of this project",
+        });
+      }
+
       assignedEmployeeId = employee._id;
     }
 
