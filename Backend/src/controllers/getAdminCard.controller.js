@@ -5,14 +5,48 @@ import {ticketModel} from "../models/ticket.model.js";
  const statusCard = async (req, res) => {
   try {
     const companyId = req.user.companyId;
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const createdThisMonth = {
+      $gte: monthStart,
+      $lte: now,
+    };
 
-    const totalEmployee = await userModel.countDocuments({ role: "employee", companyId });
-
-    const totalCustomer = await userModel.countDocuments({ role: "customer", companyId });
-
-    const activeProject = await projectModel.countDocuments({ status: "active", companyId });
-
-    const openTicket = await ticketModel.countDocuments({ status: "open", companyId });
+    const [
+      totalEmployee,
+      totalCustomer,
+      activeProject,
+      openTicket,
+      newEmployeeThisMonth,
+      newCustomerThisMonth,
+      newActiveProjectThisMonth,
+      newOpenTicketThisMonth,
+    ] = await Promise.all([
+      userModel.countDocuments({ role: "employee", companyId }),
+      userModel.countDocuments({ role: "customer", companyId }),
+      projectModel.countDocuments({ status: "active", companyId }),
+      ticketModel.countDocuments({ status: "open", companyId }),
+      userModel.countDocuments({
+        role: "employee",
+        companyId,
+        createdAt: createdThisMonth,
+      }),
+      userModel.countDocuments({
+        role: "customer",
+        companyId,
+        createdAt: createdThisMonth,
+      }),
+      projectModel.countDocuments({
+        status: "active",
+        companyId,
+        createdAt: createdThisMonth,
+      }),
+      ticketModel.countDocuments({
+        status: "open",
+        companyId,
+        createdAt: createdThisMonth,
+      }),
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -22,6 +56,10 @@ import {ticketModel} from "../models/ticket.model.js";
         totalCustomer,
         activeProject,
         openTicket,
+        newEmployeeThisMonth,
+        newCustomerThisMonth,
+        newActiveProjectThisMonth,
+        newOpenTicketThisMonth,
       },
     });
   } catch (error) {
