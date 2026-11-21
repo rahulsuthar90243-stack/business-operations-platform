@@ -69,6 +69,22 @@ import logActivity from "../../Utils/logActivity.js";
             message: "Assigned employee must be an employee in your company",
           });
         }
+
+        if (employee._id.toString() !== ticket.assignedTo?.toString()) {
+          const project = await projectModel.findOne({
+            _id: ticket.project,
+            companyId: ticket.companyId,
+          });
+          const isProjectMember = (project?.members || []).some(
+            (memberId) => memberId.toString() === employee._id.toString(),
+          );
+          if (!isProjectMember) {
+            return res.status(400).json({
+              success: false,
+              message: "Assigned employee must be a member of this project",
+            });
+          }
+        }
       }
     }
 
