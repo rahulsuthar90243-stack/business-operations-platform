@@ -9,37 +9,32 @@ import createCompany from "../../controllers/companyControllers/company.controll
 import getCompany from "../../controllers/companyControllers/getCompany.controller.js";
 import approveUser from "../../controllers/companyControllers/approveUser.controller.js";
 import rejectUser from "../../controllers/companyControllers/rejectUser.controller.js";
+import {createInvoice, getInvoiceById, getInvoices} from "../../controllers/finance.controllers/invoice.controllers.js"
+import { recordManualPayment } from "../../controllers/finance.controllers/menualPayment.controller.js";
+
+
 const router = express.Router();
 
-router.post("/company", createCompany);
-
+//dashboard routes
 router.get("/admin", 
     authMiddleware,
     roleMiddleware("admin"),
     getAdminDashboard
 )
 
+
+//company routes
+router.post("/company", createCompany);
 router.get("/getcompany/:adminId",
     authMiddleware,
     roleMiddleware("admin"),
     getCompany
 )
 
-router.get("/status/card",
+router.post("/reject/:userId", 
     authMiddleware,
     roleMiddleware("admin"),
-    statusCard,
-)
-
-router.get("/status/project", 
-    authMiddleware,
-    roleMiddleware("admin"),
-    getProjectStatusSummary,
-)
-
-router.get("/activity/logs",
-    authMiddleware,
-    getActiveFild,
+    rejectUser,
 )
 
 router.post("/approve/:userId", 
@@ -48,10 +43,52 @@ router.post("/approve/:userId",
     approveUser
 )
 
-router.post("/reject/:userId", 
+// status routes
+router.get("/status/card",
     authMiddleware,
     roleMiddleware("admin"),
-    rejectUser,
+    statusCard,
 )
+
+//activity log routes
+router.get("/activity/logs",
+    authMiddleware,
+    getActiveFild,
+)
+
+
+router.get("/status/project", 
+    authMiddleware,
+    roleMiddleware("admin"),
+    getProjectStatusSummary,
+)
+
+
+
+//finance
+router.post("/invoice", 
+    authMiddleware,
+    roleMiddleware("admin"),
+    createInvoice,
+)
+
+router.get("/getInvoices", 
+    authMiddleware,
+    roleMiddleware("admin", "customer", "manager"),
+    getInvoices,
+)
+router.get("/getInvoices/:invoiceId", 
+    authMiddleware,
+    getInvoiceById,
+)
+
+// Payment routes
+router.post("/payment/menual", 
+    authMiddleware,
+    roleMiddleware("admin", "manager"),
+    recordManualPayment,
+)
+    
+
 
 export default router;
