@@ -25,6 +25,7 @@ async function apiRequest(endpoint, options = {}) {
       result.users ??
       result.employees ??
       result.projects ??
+      result.tickets ??
       result.project
     );
   } catch (error) {
@@ -86,6 +87,10 @@ async function getProjects() {
   return apiRequest("/get/project");
 }
 
+async function getTickets() {
+  return apiRequest("/tickets");
+}
+
 async function getCompanyEmployees() {
   return apiRequest("/employees");
 }
@@ -104,6 +109,12 @@ async function updateProject(projectId, projectData) {
   });
 }
 
+async function deleteProject(projectId) {
+  return apiRequest(`/project/${encodeURIComponent(projectId)}`, {
+    method: "DELETE",
+  });
+}
+
 export {
   getAdminCardStats,
   getProjectStatus,
@@ -116,8 +127,10 @@ export {
   getNotifications,
   markNotificationsRead,
   getProjects,
+  getTickets,
   getCompanyEmployees,
   createProject,
   updateProject,
+  deleteProject,
 };
 
