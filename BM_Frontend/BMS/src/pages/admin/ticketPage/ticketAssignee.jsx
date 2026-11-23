@@ -207,7 +207,7 @@ export default function TicketAssignee({
               })
             ) : (
               <p className="px-2.5 py-3 text-xs text-slate-500">
-                No employees found.
+                Add employees to this project before assigning a ticket.
               </p>
             )}
           </div>

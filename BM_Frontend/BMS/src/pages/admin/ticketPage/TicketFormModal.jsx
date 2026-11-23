@@ -41,6 +41,12 @@ export default function TicketFormModal({
   const selectedProject = projects.find(
     (project) => project._id === form.projectId,
   );
+  const projectMemberIds = new Set(
+    (selectedProject?.members || []).map(getId),
+  );
+  const projectEmployees = employees.filter((employee) =>
+    projectMemberIds.has(getId(employee)),
+  );
 
   function updateField(event) {
     const { name, value } = event.target;
@@ -144,7 +150,7 @@ export default function TicketFormModal({
                 className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15"
               >
                 <option value="">Unassigned</option>
-                {employees.map((employee) => (
+                {projectEmployees.map((employee) => (
                   <option key={getId(employee)} value={getId(employee)}>
                     {getName(employee)}
                   </option>
@@ -157,9 +163,9 @@ export default function TicketFormModal({
                 >
                   {employeesError}
                 </span>
-              ) : selectedProject && employees.length === 0 ? (
+              ) : selectedProject && projectEmployees.length === 0 ? (
                 <span className="mt-1 block text-xs font-normal text-slate-400">
-                  No company employees are available.
+                  Add employees to this project before assigning a ticket.
                 </span>
               ) : null}
             </label>
