@@ -77,6 +77,11 @@ function getId(value) {
   return typeof value === "string" ? value : value._id || value.id || "";
 }
 
+function getProjectEmployees(project, employees) {
+  const memberIds = new Set((project?.members || []).map(getId));
+  return employees.filter((employee) => memberIds.has(getId(employee)));
+}
+
 //Utility to get the name of a person
 function getName(value) {
   if (!value) return "Unassigned";
@@ -180,7 +185,7 @@ function TicketCard({
   groupId,
   canMove,
   canAssign,
-  employees,
+  assignableEmployees,
   employeesError,
   onAssign,
   onOpen,
@@ -250,7 +255,7 @@ function TicketCard({
         <TicketAssignee
           ticket={ticket}
           canAssign={canAssign}
-          employees={employees}
+          employees={assignableEmployees}
           employeesError={employeesError}
           onAssign={onAssign}
           getId={getId}
@@ -278,6 +283,7 @@ function BoardColumn({
   groupBy,
   canMove,
   canAssign,
+  projects,
   employees,
   employeesError,
   onAssign,
@@ -333,7 +339,12 @@ function BoardColumn({
               groupId={column.id}
               canMove={canMove}
               canAssign={canAssign}
-              employees={employees}
+              assignableEmployees={getProjectEmployees(
+                projects.find(
+                  (project) => project._id === getId(ticket.project),
+                ),
+                employees,
+              )}
               employeesError={employeesError}
               onAssign={onAssign}
               onOpen={onOpen}
@@ -382,6 +393,11 @@ function TicketDrawer({
 
   if (!form) return null;
   const project = projects.find((item) => item._id === getId(ticket.project));
+  const projectEmployees = getProjectEmployees(project, employees);
+  const currentAssigneeId = getId(ticket.assignedTo);
+  const currentAssigneeIsMember = projectEmployees.some(
+    (employee) => getId(employee) === currentAssigneeId,
+  );
   const isDirty =
     form.title !== (ticket.title || "") ||
     form.description !== (ticket.description || "") ||
@@ -599,7 +615,12 @@ function TicketDrawer({
                       className="mt-1.5 h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-700"
                     >
                       <option value="">Unassigned</option>
-                      {employees.map((employee) => (
+                      {!currentAssigneeIsMember && currentAssigneeId && (
+                        <option value={currentAssigneeId}>
+                          {getName(ticket.assignedTo)} (current assignee)
+                        </option>
+                      )}
+                      {projectEmployees.map((employee) => (
                         <option key={getId(employee)} value={getId(employee)}>
                           {getName(employee)}
                         </option>
@@ -1341,6 +1362,7 @@ export default function TicketManagementPage() {
                       groupBy={groupBy}
                       canMove={canChangeStatus && pendingIds.size === 0}
                       canAssign={canAssignTickets}
+                      projects={projects}
                       employees={employees}
                       employeesError={employeesError}
                       onAssign={assignTicket}
