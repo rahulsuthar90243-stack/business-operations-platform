@@ -1,5 +1,6 @@
-import { NavLink, useNavigate} from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { NavLink, useLocation, useNavigate} from "react-router-dom";
+import { ChevronDown, LogOut } from "lucide-react";
+import { useState } from "react";
 import { getNavigationByRole } from "../config/navigationConfig";
 import { useAuth } from "../context/AuthContext";
 
@@ -8,6 +9,8 @@ function Sidebar({ ticketsCount = 0, className = "" }) {
   // name (e.g. signOut), change it here.
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [expandedGroups, setExpandedGroups] = useState({});
   
   const handleLogout = async () => {
     await logout();
@@ -52,33 +55,99 @@ function Sidebar({ ticketsCount = 0, className = "" }) {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const showBadge = item.path?.includes("tickets") && ticketsCount > 0;
+            const hasChildren = item.children?.length > 0;
+            const childIsActive = item.children?.some(
+              (child) => pathname === child.path || pathname.startsWith(`${child.path}/`)
+            );
+            const isExpanded = expandedGroups[item.id] ?? childIsActive;
+            const isActive = childIsActive;
 
             return (
               <li key={item.id}>
-                <NavLink
-                  to={item.path}
-                  title={item.label}
-                  className={({ isActive }) =>
-                    `group relative flex h-9 w-full items-center gap-3 rounded-[8px] px-3 text-left text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
-                      isActive
-                        ? "bg-[#1c2231] font-medium text-white before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-[#8b3dff]"
-                        : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
-                    }`
-                  }
-                >
-                  {Icon && (
-                    <Icon className="size-4 shrink-0" strokeWidth={1.7} aria-hidden="true" />
-                  )}
-                  <span className="hidden flex-1 truncate sm:block">{item.label}</span>
-                  {showBadge && (
-                    <>
-                      <span className="hidden min-w-5 rounded-full bg-[#321b65] px-1.5 py-0.5 text-center text-[10px] leading-4 text-[#b78aff] sm:block">
-                        {ticketsCount}
-                      </span>
-                      <span className="sr-only">, {ticketsCount} notifications</span>
-                    </>
-                  )}
-                </NavLink>
+                {hasChildren ? (
+                  <>
+                    <button
+                      type="button"
+                      title={item.label}
+                      aria-expanded={Boolean(isExpanded)}
+                      onClick={() =>
+                        setExpandedGroups((groups) => ({
+                          ...groups,
+                          [item.id]: !isExpanded,
+                        }))
+                      }
+                      className={`group relative flex h-9 w-full items-center gap-3 rounded-[8px] px-3 text-left text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
+                        isActive
+                          ? "bg-[#1c2231] font-medium text-white before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-[#8b3dff]"
+                          : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+                      }`}
+                    >
+                      {Icon && (
+                        <Icon className="size-4 shrink-0" strokeWidth={1.7} aria-hidden="true" />
+                      )}
+                      <span className="hidden flex-1 truncate sm:block">{item.label}</span>
+                      <ChevronDown
+                        className={`hidden size-3.5 shrink-0 transition-transform sm:block ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                        strokeWidth={1.7}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {isExpanded && (
+                      <ul className="hidden space-y-1 pt-1 sm:block">
+                        {item.children.map((child) => {
+                          const ChildIcon = child.icon;
+                          return (
+                            <li key={child.id}>
+                              <NavLink
+                                to={child.path}
+                                title={child.label}
+                                className={({ isActive: childActive }) =>
+                                  `group relative flex h-8 w-full items-center gap-3 rounded-[8px] pl-9 pr-3 text-left text-[12px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
+                                    childActive
+                                      ? "bg-[#1c2231] font-medium text-white before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-[#8b3dff]"
+                                      : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+                                  }`
+                                }
+                              >
+                                {ChildIcon && (
+                                  <ChildIcon className="size-3.5 shrink-0" strokeWidth={1.7} aria-hidden="true" />
+                                )}
+                                <span className="truncate">{child.label}</span>
+                              </NavLink>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    title={item.label}
+                    className={({ isActive: linkActive }) =>
+                      `group relative flex h-9 w-full items-center gap-3 rounded-[8px] px-3 text-left text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 ${
+                        linkActive
+                          ? "bg-[#1c2231] font-medium text-white before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-[#8b3dff]"
+                          : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+                      }`
+                    }
+                  >
+                    {Icon && (
+                      <Icon className="size-4 shrink-0" strokeWidth={1.7} aria-hidden="true" />
+                    )}
+                    <span className="hidden flex-1 truncate sm:block">{item.label}</span>
+                    {showBadge && (
+                      <>
+                        <span className="hidden min-w-5 rounded-full bg-[#321b65] px-1.5 py-0.5 text-center text-[10px] leading-4 text-[#b78aff] sm:block">
+                          {ticketsCount}
+                        </span>
+                        <span className="sr-only">, {ticketsCount} notifications</span>
+                      </>
+                    )}
+                  </NavLink>
+                )}
               </li>
             );
           })}

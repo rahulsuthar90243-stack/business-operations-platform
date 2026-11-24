@@ -7,12 +7,14 @@ import {
   Pencil,
   Plus,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import ProjectGridView from "./projectGridView.jsx";
 import ProjectTableView from "./projectTableView.jsx";
 import {
   createProject,
+  deleteProject,
   getAllUser,
   getProjects,
   updateProject,
@@ -346,6 +348,8 @@ export default function ProjectPage() {
   const [editingProject, setEditingProject] = useState(null);
   const [createError, setCreateError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [selectedProject, setSelectedProject] = useState(null);
 
   async function loadProjects() {
@@ -503,6 +507,32 @@ export default function ProjectPage() {
       setCreateError(requestError.message || "Unable to update project.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeleteProject() {
+    if (!selectedProject?._id) {
+      setDeleteError("Project ID is missing.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete "${selectedProject.name}"? Its tickets will remain in the system.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingProject(true);
+    setDeleteError("");
+    try {
+      await deleteProject(selectedProject._id);
+      setProjects((current) =>
+        current.filter((project) => project._id !== selectedProject._id),
+      );
+      setSelectedProject(null);
+    } catch (requestError) {
+      setDeleteError(requestError.message || "Unable to delete project.");
+    } finally {
+      setDeletingProject(false);
     }
   }
 
@@ -801,11 +831,32 @@ export default function ProjectPage() {
                 </dd>
               </div>
             </dl>
-            <div className="mt-6 flex justify-end">
+            {deleteError && (
+              <p className="mt-4 text-sm text-red-600" role="alert">
+                {deleteError}
+              </p>
+            )}
+            <div className="mt-6 flex justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                disabled={deletingProject}
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deletingProject ? (
+                  "Deleting..."
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    Delete Project
+                  </>
+                )}
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   setCreateError("");
+                  setDeleteError("");
                   setEditingProject(selectedProject);
                   setSelectedProject(null);
                 }}
