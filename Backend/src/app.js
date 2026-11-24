@@ -8,6 +8,8 @@ import managerRouter from "./routers/deashboard.router/manager.router.js"
 import cors from "cors"
 import projectRouter from "./routers/project.router.js"
 import ticketRouter from "./routers/ticket.router.js"
+import expenseRouter from "./routers/deashboard.router/expenseRoutes.js"
+import revenueRouter from "./routers/deashboard.router/revenues.router.js"
 
 
 // import fs from "fs"
@@ -46,6 +48,8 @@ app.use("/api", customerRouter);
 app.use("/api", adminRouter);
 app.use("/api", employeeRouter);
 app.use("/api", managerRouter);
+app.use("/api", expenseRouter);
+app.use("/api", revenueRouter);
 
 // project Router
 
