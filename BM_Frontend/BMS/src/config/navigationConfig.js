@@ -36,7 +36,14 @@ const PATHS = Object.freeze({
     projects: '/admin/projects',
     customers: '/admin/customers',
     tickets: '/admin/tickets',
-    analytics: '/admin/analytics',
+    finance: {
+      dashboard: '/admin/finance/dashboard',
+      invoices: '/admin/finance/invoices',
+      payments: '/admin/finance/payments',
+      expenses: '/admin/finance/expenses',
+      revenue: '/admin/finance/revenue',
+      reports: '/admin/finance/reports',
+    },
     settings: '/admin/settings',
     auditLogs: '/admin/audit-logs',
   },
@@ -86,7 +93,19 @@ const NAVIGATION_BY_ROLE = {
     { id: 'admin-projects', label: 'Projects', path: PATHS.admin.projects, icon: Folder },
     { id: 'admin-customers', label: 'Customers', path: PATHS.admin.customers, icon: Briefcase },
     { id: 'admin-tickets', label: 'Tickets', path: PATHS.admin.tickets, icon: Ticket },
-    { id: 'admin-analytics', label: 'Analytics', path: PATHS.admin.analytics, icon: BarChart3 },
+    {
+      id: 'admin-finance',
+      label: 'Finance',
+      icon: BarChart3,
+      children: [
+        { id: 'admin-finance-dashboard', label: 'Finance Dashboard', path: PATHS.admin.finance.dashboard, icon: LayoutDashboard },
+        { id: 'admin-finance-invoices', label: 'Invoices', path: PATHS.admin.finance.invoices, icon: FileText },
+        { id: 'admin-finance-payments', label: 'Payments', path: PATHS.admin.finance.payments, icon: Briefcase },
+        { id: 'admin-finance-expenses', label: 'Expenses', path: PATHS.admin.finance.expenses, icon: ClipboardCheck },
+        { id: 'admin-finance-revenue', label: 'Revenue', path: PATHS.admin.finance.revenue, icon: BarChart3 },
+        { id: 'admin-finance-reports', label: 'Reports', path: PATHS.admin.finance.reports, icon: ClipboardList },
+      ],
+    },
     { id: 'admin-settings', label: 'Settings', path: PATHS.admin.settings, icon: Settings },
     { id: 'admin-audit-logs', label: 'Audit Logs', path: PATHS.admin.auditLogs, icon: ClipboardList },
   ],
@@ -135,11 +154,18 @@ const normalizeRole = (role) =>
  * Returns a new array so consumers cannot mutate the shared config.
  *
  * @param {string} role
- * @returns {Array<{id: string, label: string, path: string, icon: import('react').ComponentType}>}
+ * @returns {Array<{id: string, label: string, path?: string, icon?: import('react').ComponentType, children?: Array<{id: string, label: string, path: string, icon?: import('react').ComponentType}>}>}
  */
 export const getNavigationByRole = (role) => {
   const items = NAVIGATION_BY_ROLE[normalizeRole(role)];
-  return items ? items.map((item) => ({ ...item })) : [];
+  return items
+    ? items.map((item) => ({
+        ...item,
+        ...(item.children && {
+          children: item.children.map((child) => ({ ...child })),
+        }),
+      }))
+    : [];
 };
 
 
@@ -150,6 +176,8 @@ export const getDefaultRouteByRole = (role) =>
   NAVIGATION_BY_ROLE[normalizeRole(role)]?.[0]?.path ?? null;
 
 export const isPathInNavigation = (role, pathname) =>
-  getNavigationByRole(role).some(
-    ({ path }) => pathname === path || pathname.startsWith(`${path}/`)
+  getNavigationByRole(role).some(({ path, children }) =>
+    [path, ...(children ?? []).map((child) => child.path)]
+      .filter(Boolean)
+      .some((itemPath) => pathname === itemPath || pathname.startsWith(`${itemPath}/`))
   );
