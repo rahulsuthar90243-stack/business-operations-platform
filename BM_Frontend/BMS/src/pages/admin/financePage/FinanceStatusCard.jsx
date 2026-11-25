@@ -6,6 +6,7 @@ export default function FinanceStatusCard({
   change,
   favorable,
   icon: Icon,
+  footer,
 }) {
   const numericChange = Number(change);
   const hasChange =
@@ -25,20 +26,24 @@ export default function FinanceStatusCard({
         {value}
       </p>
       <div className="mt-2 flex min-h-6 items-center gap-2 text-xs">
-        {hasChange ? (
-          <span
-            className={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 font-medium ${
-              favorable ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
-            }`}
-          >
-            <TrendIcon aria-hidden="true" className="size-3" />
-            {numericChange > 0 ? "+" : ""}
-            {numericChange.toFixed(1)}%
-          </span>
-        ) : (
-          <span className="text-slate-400">—</span>
+        {footer ?? (
+          <>
+            {hasChange ? (
+              <span
+                clcChaassName={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 font-medium ${
+                  favorable ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                }`}
+              >
+                <TrendIcon aria-hidden="true" className="size-3" />
+                {numericChange > 0 ? "+" : ""}
+                {numeringe.toFixed(1)}%
+              </span>
+            ) : (
+              <span className="text-slate-400">—</span>
+            )}
+            <span className="text-slate-400">vs last month</span>
+          </>
         )}
-        <span className="text-slate-400">vs last month</span>
       </div>
     </article>
   );
