@@ -102,6 +102,19 @@ async function getInvoiceById(invoiceId) {
   return apiRequest(`/getInvoices/${encodeURIComponent(invoiceId)}`);
 }
 
+async function updateInvoice(invoiceId, invoiceData) {
+  return apiRequest(`/invoice/${encodeURIComponent(invoiceId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(invoiceData),
+  });
+}
+
+async function deleteInvoice(invoiceId) {
+  return apiRequest(`/invoice/${encodeURIComponent(invoiceId)}`, {
+    method: "DELETE",
+  });
+}
+
 async function recordManualPayment(paymentData) {
   return apiRequest("/payment/menual", {
     method: "POST",
@@ -141,6 +154,8 @@ export {
   getInvoices,
   createInvoice,
   getInvoiceById,
+  updateInvoice,
+  deleteInvoice,
   recordManualPayment,
   getFinanceDashboardData,
   getRevenueExpenseData,

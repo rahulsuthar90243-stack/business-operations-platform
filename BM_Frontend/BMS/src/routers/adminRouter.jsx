@@ -8,8 +8,11 @@ import {
 import DashboardLayout from '../layouts/DashboardLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserManagement from '../pages/admin/userManagementPage/userManagement.jsx';
+import CustomerPage from '../pages/admin/customerPage/customer.jsx';
 import ProjectPage from '../pages/admin/projectsPage/project';
 import TicketManagementPage from '../pages/admin/ticketPage/tickets.jsx';
+import FinanceDashboard from '../pages/admin/financePage/financeDashboard.jsx';
+import InvoicePage from '../pages/admin/financePage/invoicePage/invoice.jsx';
 import ApiDocs from '../pages/admin/ApiDocs';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../config/navigationConfig';
@@ -56,9 +59,14 @@ export default createRoutesFromElements(
       {/* Placeholders for future admin pages */}
       <Route id="admin-users" path="users" element={<UserManagement />} />
       <Route id="admin-projects" path="projects" element={<ProjectPage />} />
-      <Route id="admin-customers" path="customers" element={<Placeholder name="Customers" />} />
+      <Route id="admin-customers" path="customers" element={<CustomerPage />} />
       <Route id="admin-tickets" path="tickets" element={<TicketManagementPage />} />
-      <Route id="admin-analytics" path="analytics" element={<Placeholder name="Analytics" />} />
+      <Route id="admin-finance-dashboard" path="finance/dashboard" element={<FinanceDashboard />} />
+      <Route id="admin-finance-invoices" path="finance/invoices" element={<InvoicePage />} />
+      <Route id="admin-finance-payments" path="finance/payments" element={<Placeholder name="Payments" />} />
+      <Route id="admin-finance-expenses" path="finance/expenses" element={<Placeholder name="Expenses" />} />
+      <Route id="admin-finance-revenue" path="finance/revenue" element={<Placeholder name="Revenue" />} />
+      <Route id="admin-finance-reports" path="finance/reports" element={<Placeholder name="Reports" />} />
       <Route id="admin-settings" path="settings" element={<Placeholder name="Settings" />} />
       <Route id="admin-audit-logs" path="audit-logs" element={<Placeholder name="Audit Logs" />} />
       <Route id="admin-api-docs" path="api-docs" element={<ApiDocs />} />

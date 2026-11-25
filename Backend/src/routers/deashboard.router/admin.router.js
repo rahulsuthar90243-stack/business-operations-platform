@@ -9,7 +9,7 @@ import createCompany from "../../controllers/companyControllers/company.controll
 import getCompany from "../../controllers/companyControllers/getCompany.controller.js";
 import approveUser from "../../controllers/companyControllers/approveUser.controller.js";
 import rejectUser from "../../controllers/companyControllers/rejectUser.controller.js";
-import {createInvoice, getInvoiceById, getInvoices} from "../../controllers/finance.controllers/invoice.controllers.js"
+import {createInvoice, getInvoiceById, getInvoices, updateInvoice, deleteInvoice} from "../../controllers/finance.controllers/invoice.controllers.js"
 import { recordManualPayment } from "../../controllers/finance.controllers/menualPayment.controller.js";
 
 
@@ -70,6 +70,18 @@ router.post("/invoice",
     authMiddleware,
     roleMiddleware("admin"),
     createInvoice,
+)
+
+router.patch("/invoice/:invoiceId",
+    authMiddleware,
+    roleMiddleware("admin", "manager"),
+    updateInvoice,
+)
+
+router.delete("/invoice/:invoiceId",
+    authMiddleware,
+    roleMiddleware("admin", "manager"),
+    deleteInvoice,
 )
 
 router.get("/getInvoices", 
