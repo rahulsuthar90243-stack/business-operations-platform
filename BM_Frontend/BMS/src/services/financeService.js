@@ -122,6 +122,22 @@ async function recordManualPayment(paymentData) {
   });
 }
 
+async function getPayments() {
+  const payments = [];
+  let page = 1;
+  let pageData;
+
+  do {
+    pageData = await apiRequest(`/payments?limit=100&page=${page}`);
+    if (Array.isArray(pageData)) {
+      payments.push(...pageData);
+    }
+    page += 1;
+  } while (Array.isArray(pageData) && pageData.length === 100);
+
+  return payments;
+}
+
 async function getFinanceDashboardData() {
   const [revenues, expenses, invoices] = await Promise.all([
     getRevenues(),
@@ -157,6 +173,7 @@ export {
   updateInvoice,
   deleteInvoice,
   recordManualPayment,
+  getPayments,
   getFinanceDashboardData,
   getRevenueExpenseData,
 };
