@@ -11,6 +11,7 @@ import approveUser from "../../controllers/companyControllers/approveUser.contro
 import rejectUser from "../../controllers/companyControllers/rejectUser.controller.js";
 import {createInvoice, getInvoiceById, getInvoices, updateInvoice, deleteInvoice} from "../../controllers/finance.controllers/invoice.controllers.js"
 import { recordManualPayment } from "../../controllers/finance.controllers/menualPayment.controller.js";
+import { getPayments } from "../../controllers/finance.controllers/payment.controller.js";
 
 
 const router = express.Router();
@@ -95,6 +96,11 @@ router.get("/getInvoices/:invoiceId",
 )
 
 // Payment routes
+router.get("/payments",
+    authMiddleware,
+    roleMiddleware("admin", "manager"),
+    getPayments,
+)
 router.post("/payment/menual", 
     authMiddleware,
     roleMiddleware("admin", "manager"),
