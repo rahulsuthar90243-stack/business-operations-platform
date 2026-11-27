@@ -1,12 +1,22 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
+/**
+ * @param {{
+ *   label: string,
+ *   value: import("react").ReactNode,
+ *   change?: number | string | null,
+ *   favorable?: boolean,
+ *   icon: import("lucide-react").LucideIcon,
+ *   footer?: import("react").ReactNode
+ * }} props
+ */
 export default function FinanceStatusCard({
   label,
   value,
-  change,
-  favorable,
+  change = undefined,
+  favorable = false,
   icon: Icon,
-  footer,
+  footer = undefined,
 }) {
   const numericChange = Number(change);
   const hasChange =
@@ -30,13 +40,13 @@ export default function FinanceStatusCard({
           <>
             {hasChange ? (
               <span
-                clcChaassName={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 font-medium ${
+                className={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 font-medium ${
                   favorable ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                 }`}
               >
                 <TrendIcon aria-hidden="true" className="size-3" />
                 {numericChange > 0 ? "+" : ""}
-                {numeringe.toFixed(1)}%
+                {numericChange.toFixed(1)}%
               </span>
             ) : (
               <span className="text-slate-400">—</span>
