@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Download, Eye, Pencil, Search, Trash2 } from "lucide-react";
+import { Download, Eye, Pencil, Search, Trash2 } from "lucide-react";
 import DeleteInvoice from "./deleteInvoice.jsx";
+import FinanceTable from "../FinanceTable.jsx";
 
 const PAGE_SIZE = 8;
 
@@ -199,8 +200,9 @@ export default function InvoiceTable({ invoices, onEditInvoice, onDeletedInvoice
 
   return (
     <>
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="grid grid-cols-1 gap-2 border-b border-slate-100 p-3 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_auto_auto_auto_auto_auto]">
+      <FinanceTable
+        toolbar={
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_auto_auto_auto_auto_auto]">
           <label className="relative min-w-0">
             <Search
               aria-hidden="true"
@@ -280,36 +282,27 @@ export default function InvoiceTable({ invoices, onEditInvoice, onDeletedInvoice
             Export
             <Download aria-hidden="true" className="size-4" />
           </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[780px] text-left text-xs">
-            <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
-              <tr>
-                <th scope="col" className="px-4 py-3 font-medium">
-                  Invoice
-                </th>
-                <th scope="col" className="px-4 py-3 font-medium">
-                  Customer
-                </th>
-                <th scope="col" className="px-4 py-3 font-medium">
-                  Amount
-                </th>
-                <th scope="col" className="px-4 py-3 font-medium">
-                  Issued
-                </th>
-                <th scope="col" className="px-4 py-3 font-medium">
-                  Due date
-                </th>
-                <th scope="col" className="px-4 py-3 font-medium">
-                  Status
-                </th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+          </div>
+        }
+        columns={[
+          { label: "Invoice" },
+          { label: "Customer" },
+          { label: "Amount" },
+          { label: "Issued" },
+          { label: "Due date" },
+          { label: "Status" },
+          { label: "Action", align: "right" },
+        ]}
+        hasRows={pageInvoices.length > 0}
+        emptyMessage="No invoices match your filters."
+        firstRow={firstRow}
+        lastRow={lastRow}
+        totalRows={filteredInvoices.length}
+        itemLabel="invoices"
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      >
               {pageInvoices.map((invoice) => {
                 const status = getInvoiceStatus(invoice);
                 return (
@@ -385,49 +378,7 @@ export default function InvoiceTable({ invoices, onEditInvoice, onDeletedInvoice
                   </tr>
                 );
               })}
-              {pageInvoices.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-4 py-10 text-center text-sm text-slate-500"
-                  >
-                    No invoices match your filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <footer className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-slate-400">
-          <span>
-            Showing {firstRow}–{lastRow} of {filteredInvoices.length} invoices
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => setPage(currentPage - 1)}
-              aria-label="Previous page"
-              className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 enabled:hover:bg-slate-50 disabled:opacity-40"
-            >
-              <ChevronLeft aria-hidden="true" className="size-4" />
-            </button>
-            <span className="whitespace-nowrap text-slate-600">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => setPage(currentPage + 1)}
-              aria-label="Next page"
-              className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 enabled:hover:bg-slate-50 disabled:opacity-40"
-            >
-              <ChevronRight aria-hidden="true" className="size-4" />
-            </button>
-          </div>
-        </footer>
-      </section>
+      </FinanceTable>
 
       {selectedInvoice && (
         <div
